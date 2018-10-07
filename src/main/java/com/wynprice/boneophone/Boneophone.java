@@ -40,9 +40,7 @@ public class Boneophone
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-        SPOOKY = new MidiStream(new ResourceLocation(MODID, "spook"));
-        // some example code
-        logger.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
+        SPOOKY = MidiStream.getMidi(new ResourceLocation(MODID, "spook"));
     }
 
     @SubscribeEvent

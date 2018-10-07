@@ -1,5 +1,6 @@
 package com.wynprice.boneophone.entity;
 
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
@@ -10,6 +11,14 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
 
     public MusicalSkeletonRenderer(RenderManager renderManagerIn) {
         super(renderManagerIn, new MusicalSkeletonModel(0F), 0.1F);
+    }
+
+    @Override
+    public void doRender(MusicalSkeleton entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        if(this.mainModel instanceof ModelBiped) {
+            ModelBiped model = ((ModelBiped) this.mainModel);
+        }
+        super.doRender(entity, x, y, z, entityYaw, partialTicks);
     }
 
     @Override

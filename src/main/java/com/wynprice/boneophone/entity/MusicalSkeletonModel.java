@@ -3,6 +3,7 @@ package com.wynprice.boneophone.entity;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumHandSide;
 
 public class MusicalSkeletonModel extends ModelBiped { //TODO: move to own model
@@ -27,9 +28,38 @@ public class MusicalSkeletonModel extends ModelBiped { //TODO: move to own model
 
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn)
     {
-        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
+//        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
+    }
 
-        //TODO model rotations.
+    @Override
+    public void setLivingAnimations(EntityLivingBase entityIn, float limbSwing, float limbSwingAmount, float partialTickTime) {
+
+        if(entityIn instanceof MusicalSkeleton) {
+
+            MusicalSkeleton skeleton = (MusicalSkeleton) entityIn;
+
+            boolean doLeft = skeleton.leftTicksFromHit <= MusicalSkeleton.ticksToHit;
+            boolean doRight = skeleton.rightTicksFromHit <= MusicalSkeleton.ticksToHit;
+
+            float rad = (float) Math.toRadians(90F);
+
+            if(doLeft) {
+                float lLerpHit = (skeleton.leftTicksFromHit + partialTickTime) / MusicalSkeleton.ticksToHit;
+                float targetL = (skeleton.prevLeftTargetHit + (skeleton.leftTargetHit - skeleton.prevLeftTargetHit) * lLerpHit) - 0.5F;
+
+                this.bipedLeftArm.rotateAngleY = targetL * rad;
+                this.bipedLeftArm.rotateAngleX = (float) Math.min(Math.toRadians(-45F + 45F * lLerpHit), 0F);
+            }
+
+            if(doRight) {
+                float rLerpHit = (skeleton.rightTicksFromHit + partialTickTime) / MusicalSkeleton.ticksToHit;
+                float targetR = (skeleton.prevRightTargetHit + (skeleton.rightTargetHit - skeleton.prevRightTargetHit) * rLerpHit) - 0.5F;
+
+                this.bipedRightArm.rotateAngleY = targetR * rad;
+                this.bipedRightArm.rotateAngleX = (float) Math.min(Math.toRadians(-45F + 45F * rLerpHit), 0F);
+            }
+        }
+
     }
 
     public void postRenderArm(float scale, EnumHandSide side)
