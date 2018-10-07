@@ -4,6 +4,7 @@ import com.wynprice.boneophone.Boneophone;
 import com.wynprice.boneophone.midi.MidiStream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,7 +19,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public class MusicalSkeleton extends EntityMob {
+public class MusicalSkeleton extends EntityCreature {
 
     public static int ticksToHit = 3;
 
