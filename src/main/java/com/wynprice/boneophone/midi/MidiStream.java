@@ -23,7 +23,7 @@ public class MidiStream {
 
     private MidiTone[][] data = new MidiTone[0][0];
     private final ResourceLocation location;
-    private int bpm = -1;
+    private float midiTicksPerMcTick = -1;
 
     private MidiStream(ResourceLocation location) {
         this.location = new ResourceLocation(location.getResourceDomain(), "midis/" + location.getResourcePath() + ".mid");
@@ -36,9 +36,13 @@ public class MidiStream {
 
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
-        int bpm = -1;
+        this.midiTicksPerMcTick = -1;
         try {
             Sequence sequence = MidiSystem.getSequence(manager.getResource(location).getInputStream());
+            float div = sequence.getDivisionType();
+            if(div != Sequence.PPQ) {
+                throw new UnsupportedOperationException("Don't know yet how to handle SMPTE timecodes. Try reformatting the midi");
+            }
             for (long i = 0; i < sequence.getTickLength(); i++) {
                 map.put(i, Lists.newArrayList());
             }
@@ -55,7 +59,13 @@ public class MidiStream {
                             //Microseconds per minute is calculated as 6e7 / (tt tt tt)
                             byte[] data = mm.getData();
                             int tempo = (data[0] & 0xff) << 16 | (data[1] & 0xff) << 8 | (data[2] & 0xff);
-                            bpm = 60000000 / tempo;
+                            int bpm = 60000000 / tempo;
+
+                            //Formula for mc ticks per midi tick would be `1200F / (bpm * ppq)`, with 1200 being the
+                            //amount of minecraft ticks in a minute (bpm is in minutes). However, I want to find
+                            //the amount of midi ticks per mc tick, meaning I would have done `1 / (answer from before)`.
+                            //To simplify this, i can just switch the numerator and denominator around.
+                            this.midiTicksPerMcTick = (bpm * sequence.getResolution()) / 1200F;
                             foundTempo = true;
                         }
                     } else if(message instanceof ShortMessage) {
@@ -75,10 +85,9 @@ public class MidiStream {
         } catch (IOException | InvalidMidiDataException e) {
             e.printStackTrace();
         }
-        if(bpm == -1) {
-            throw new IllegalArgumentException("Unable to find bpm");
+        if(this.midiTicksPerMcTick == -1) {
+            throw new IllegalArgumentException("Error loading. Unable to determine tick ratio: " + this.midiTicksPerMcTick);
         }
-        this.bpm = bpm;
         this.data = new MidiTone[map.size()][];
         int t = 0;
         for (Long key : map.keySet()) {
@@ -95,12 +104,12 @@ public class MidiStream {
     }
 
     public MidiTone[] getNotesAt(int ticks) {
-        int bpm = this.bpm / 3;
-        int start = ticks * bpm;
+        int start = (int) Math.floor(ticks * this.midiTicksPerMcTick);
+        int end = (int) Math.floor((ticks + 1) * this.midiTicksPerMcTick);
 
         List<MidiTone> list = Lists.newArrayList();
-        for (int i = 0; i < bpm; i++) {
-            Collections.addAll(list, this.data[(start + i) % this.data.length]);
+        for (int i = start; i < end; i++) {
+            Collections.addAll(list, this.data[i % this.data.length]);
         }
         return list.toArray(new MidiTone[0]);
     }
