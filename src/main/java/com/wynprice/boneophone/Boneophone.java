@@ -6,14 +6,18 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.entity.MusicalSkeletonRenderer;
+import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.C1UploadMidiFile;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
 import com.wynprice.boneophone.network.S2SyncAndPlayMidi;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,6 +29,13 @@ import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.file.Files;
 
 @Mod(modid = Boneophone.MODID, name = Boneophone.NAME, version = Boneophone.VERSION)
 @Mod.EventBusSubscriber
@@ -54,7 +65,30 @@ public class Boneophone {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        SPOOKY = MidiStream.getMidi(new ResourceLocation(MODID, "elise"));
+        SPOOKY = MidiStream.getMidi(new ResourceLocation(MODID, "spook"));
+
+        if (FMLCommonHandler.instance().getSide().isClient()) {
+            new Thread(() -> {
+                String base = "https://raw.githubusercontent.com/Wyn-Price/Boneophone/master/midis/";
+                try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new URL(base + "midis.json").openStream()))) {
+                    JsonObject json = new JsonParser().parse(bufferedReader).getAsJsonObject();
+                    LOGGER.info("Downloaded midi json file");
+                    for (JsonElement elements : JsonUtils.getJsonArray(json, "midis")) {
+                        String name = JsonUtils.getString(elements, "midis");
+                        File out = new File(MidiFileHandler.folder, name);
+                        if(!out.exists()) {
+                            Files.copy(new URL(base + name).openStream(), out.toPath());
+                            LOGGER.info("Successfully downloaded and copied " + name);
+                        } else {
+                            LOGGER.info("Skipping download of {} as it already exists locally", name);
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.error(CrashReport.makeCrashReport(e, "Failed to receive data from URL").getCompleteReport());
+                }
+
+            }).start();
+        }
     }
 
     @SubscribeEvent
