@@ -1,10 +1,15 @@
 package com.wynprice.boneophone;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.entity.MusicalSkeletonRenderer;
 import com.wynprice.boneophone.midi.MidiStream;
+import com.wynprice.boneophone.network.C1UploadMidiFile;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
-import net.minecraft.init.Blocks;
+import com.wynprice.boneophone.network.S2SyncAndPlayMidi;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;
@@ -28,7 +33,7 @@ public class Boneophone {
     public static final String NAME = "Boneophone";
     public static final String VERSION = "1.0";
 
-    private static Logger logger;
+    public static Logger LOGGER;
 
     public static MidiStream SPOOKY = null;
 
@@ -36,12 +41,15 @@ public class Boneophone {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         this.registerPackets();
     }
 
     private void registerPackets() {
         NETWORK.registerMessage(new S0MusicalSkeletonStateUpdate.Handler(), S0MusicalSkeletonStateUpdate.class, 0, Side.CLIENT);
+        NETWORK.registerMessage(new C1UploadMidiFile.Handler(), C1UploadMidiFile.class, 1, Side.SERVER);
+        NETWORK.registerMessage(new S2SyncAndPlayMidi.Handler(), S2SyncAndPlayMidi.class, 2, Side.CLIENT);
+
     }
 
     @EventHandler

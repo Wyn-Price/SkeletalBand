@@ -1,6 +1,7 @@
 package com.wynprice.boneophone.entity;
 
 import com.wynprice.boneophone.Boneophone;
+import com.wynprice.boneophone.gui.GuiSelectMidis;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.DifficultyInstance;
@@ -43,6 +44,9 @@ public class MusicalSkeleton extends EntityCreature {
 
     public float rx, ry, lx, ly;
 
+    public MidiStream currentlyPlaying = Boneophone.SPOOKY;
+    public int playingTicks = 0;
+
     public MusicalSkeleton(World worldIn) {
         super(worldIn);
     }
@@ -67,6 +71,8 @@ public class MusicalSkeleton extends EntityCreature {
         this.rightTicksFromHit++;
         this.leftTicksFromHit++;
 
+        this.playingTicks++;
+
         if(this.world.isRemote && this.isPlaying) {
             boolean usedLeft = false;
             boolean usedRight = false;
@@ -80,11 +86,9 @@ public class MusicalSkeleton extends EntityCreature {
             float secondRightNote = -1F;
             float secondLeftNote = -1F;
 
-            Boneophone.SPOOKY = MidiStream.getMidi(new ResourceLocation(Boneophone.MODID, "spook"));
-
-            for (MidiStream.MidiTone tone : Boneophone.SPOOKY.getNotesAt(this.ticksExisted + ticksToHit)) {
+            for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks + ticksToHit)) {
                 if(!usedLeft || !usedRight || !usedSecondLeft || !usedSecondRight) {
-                    if(tone.getPosition() >= 0.5F) {
+                    if(tone.getPosition() < 0.5F) { //I would have thought it to be >= 0.5, however in practice this seems not to be the case todo: investigate that
                         if(!usedRight) {
                             rightNote = tone.getPosition();
                             usedRight = true;
@@ -128,7 +132,7 @@ public class MusicalSkeleton extends EntityCreature {
             }
 
 
-            for (MidiStream.MidiTone tone : Boneophone.SPOOKY.getNotesAt(this.ticksExisted)) {
+            for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks)) {
                 float f = (float)Math.pow(2.0D, (tone.getKey() / 12.0D));
                 Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(tone.getEvent(), SoundCategory.RECORDS, 1F, f, this.getPosition()));
             }
@@ -154,12 +158,19 @@ public class MusicalSkeleton extends EntityCreature {
         if(this.freind != null && this.freind.freind != this) {
             this.isPlaying = false;
             this.isKeyboard = false;
+            this.freind = null;
         }
     }
 
     @Override
-    public boolean canBeCollidedWith() {
-        return this.freind == null;
+    protected boolean processInteract(EntityPlayer player, EnumHand hand) {
+        if(this.isPlaying && this.world.isRemote) {
+            Minecraft.getMinecraft().displayGuiScreen(new GuiSelectMidis(this.getEntityId()));
+            return true;
+        } else if(this.isKeyboard) {
+            return this.freind.processInteract(player, hand);
+        }
+        return false;
     }
 
     @Nullable
@@ -265,8 +276,7 @@ public class MusicalSkeleton extends EntityCreature {
 
         @Override
         public boolean shouldContinueExecuting() {
-            boolean is = this.skeleton.freind.freind == this.skeleton;
-            return this.skeleton.freind.isEntityAlive() && is;
+            return this.skeleton.freind != null && this.skeleton.freind.isEntityAlive() && this.skeleton.freind.freind == this.skeleton;
         }
 
         @Override

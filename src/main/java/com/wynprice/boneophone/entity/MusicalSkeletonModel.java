@@ -70,7 +70,7 @@ public class MusicalSkeletonModel extends ModelBiped { //TODO: move to own model
 
             if(doLeft) {
                 float lLerpHit = (skeleton.leftTicksFromHit + partialTickTime) / MusicalSkeleton.ticksToHit;
-                float targetL = (skeleton.prevLeftTargetHit + (skeleton.leftTargetHit - skeleton.prevLeftTargetHit) * lLerpHit) - 0.5F;
+                float targetL = (skeleton.prevLeftTargetHit + (skeleton.leftTargetHit - skeleton.prevLeftTargetHit) * lLerpHit) - 0.65F;
 
                 skeleton.ry = targetL * rad;
                 skeleton.rx = (float) Math.min(Math.toRadians(-90F + 45F * lLerpHit), 0F); //-90: non hit angle, (-90 + 45) = -45: hit angle
@@ -78,7 +78,7 @@ public class MusicalSkeletonModel extends ModelBiped { //TODO: move to own model
 
             if(doRight) {
                 float rLerpHit = (skeleton.rightTicksFromHit + partialTickTime) / MusicalSkeleton.ticksToHit;
-                float targetR = (skeleton.prevRightTargetHit + (skeleton.rightTargetHit - skeleton.prevRightTargetHit) * rLerpHit) - 0.5F;
+                float targetR = (skeleton.prevRightTargetHit + (skeleton.rightTargetHit - skeleton.prevRightTargetHit) * rLerpHit) - 0.35F;
 
                 skeleton.ly = targetR * rad;
                 skeleton.lx = (float) Math.min(Math.toRadians(-90F + 45F * rLerpHit), 0F);

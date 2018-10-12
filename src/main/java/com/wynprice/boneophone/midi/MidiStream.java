@@ -4,41 +4,49 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.wynprice.boneophone.SoundHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.client.resource.IResourceType;
-import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
 
 import javax.sound.midi.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class MidiStream {
 
-    private MidiTone[][] data = new MidiTone[0][0];
-    private final ResourceLocation location;
-    private float midiTicksPerMcTick = -1;
+    MidiTone[][] data = new MidiTone[0][0];
+    private ExceptionSupplier<InputStream> streamSupplier;
 
-    private MidiStream(ResourceLocation location) {
-        this.location = new ResourceLocation(location.getResourceDomain(), "midis/" + location.getResourcePath() + ".mid");
-        this.load(Minecraft.getMinecraft().getResourceManager());
-        ((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(this::load); //Hmmmmmm
+    float midiTicksPerMcTick = -1;
+    int min;
+    int max;
+
+    MidiStream(MidiTone[][] data, float midiTicksPerMcTick, int min, int max) {
+        this.data = data;
+        this.midiTicksPerMcTick = midiTicksPerMcTick;
+        this.min = min;
+        this.max = max;
     }
 
-    public void load(IResourceManager manager) {
+    MidiStream(ExceptionSupplier<InputStream> streamSupplier) {
+        this.streamSupplier = streamSupplier;
+        this.load();
+    }
+
+    public void load() {
+        if(this.streamSupplier == null) {
+            return;
+        }
         Map<Long, List<MidiTone>> map = Maps.newHashMap();
 
-        int min = Integer.MAX_VALUE;
-        int max = Integer.MIN_VALUE;
+        this.min = Integer.MAX_VALUE;
+        this.max = Integer.MIN_VALUE;
         this.midiTicksPerMcTick = -1;
         try {
-            Sequence sequence = MidiSystem.getSequence(manager.getResource(location).getInputStream());
+            Sequence sequence = MidiSystem.getSequence(this.streamSupplier.getWithException());
             float div = sequence.getDivisionType();
             if(div != Sequence.PPQ) {
                 throw new UnsupportedOperationException("Don't know yet how to handle SMPTE timecodes. Try reformatting the midi");
@@ -76,13 +84,13 @@ public class MidiStream {
                         ShortMessage sm = (ShortMessage) message;
                         if(sm.getCommand() == 0x90) { //ON
                             map.get(event.getTick()).add(new MidiTone(sm.getData1()));
-                            min = Math.min(min, sm.getData1());
-                            max = Math.max(max, sm.getData1());
+                            this.min = Math.min(this.min, sm.getData1());
+                            this.max = Math.max(this.max, sm.getData1());
                         }
                     }
                 }
             }
-        } catch (IOException | InvalidMidiDataException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         if(this.midiTicksPerMcTick == -1) {
@@ -95,7 +103,7 @@ public class MidiStream {
             MidiTone[] ain = new MidiTone[lis.size()];
             for (int i = 0; i < lis.size(); i++) {
                 MidiTone tone = lis.get(i);
-                tone.setPosition((float)(tone.key - min) / (float)(max - min));
+                tone.setPosition((float)(tone.key - this.min) / (float)(this.max - this.min));
                 ain[i] = tone;
             }
             this.data[t++] = ain;
@@ -117,11 +125,12 @@ public class MidiStream {
     private static final Map<ResourceLocation, MidiStream> CACHE = Maps.newHashMap();
 
     public static MidiStream getMidi(ResourceLocation location) {
-        return CACHE.computeIfAbsent(location, MidiStream::new);
+        ResourceLocation fullLoc = new ResourceLocation(location.getResourceDomain(), "midis/" + location.getResourcePath() + ".mid");
+        return CACHE.computeIfAbsent(location, location1 -> new MidiStream(() -> Minecraft.getMinecraft().getResourceManager().getResource(fullLoc).getInputStream()));
     }
 
-    public class MidiTone {
-        private final int key;
+    public static class MidiTone {
+        final int key;
         private float position = -1F;
 
         public MidiTone(int key) {
@@ -146,5 +155,19 @@ public class MidiStream {
         public float getPosition() {
             return this.position;
         }
+    }
+
+    public interface ExceptionSupplier<T> extends Supplier<T> {
+
+        @Override
+        default T get() {
+            try {
+                return this.getWithException();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        T getWithException() throws Exception;
     }
 }
