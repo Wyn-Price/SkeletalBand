@@ -50,9 +50,13 @@ public class MusicalSkeletonModel extends ModelBiped { //TODO: move to own model
                 float angle = (float) (90D * Math.PI/180F);
                 this.bipedRightLeg.rotateAngleX = -angle;
                 this.bipedLeftLeg.rotateAngleX = -angle;
-
+            } else if(skeleton.isKeyboard) {
+                this.bipedRightLeg.rotateAngleX = this.bipedRightLeg.rotateAngleY = this.bipedRightLeg.rotateAngleZ =
+                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleY = this.bipedRightArm.rotateAngleZ =
+                this.bipedLeftLeg.rotateAngleX = this.bipedLeftLeg.rotateAngleY = this.bipedLeftLeg.rotateAngleZ =
+                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleY = this.bipedLeftArm.rotateAngleZ =
+                0;
             }
-
         }
     }
 

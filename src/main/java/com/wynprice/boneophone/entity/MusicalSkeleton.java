@@ -173,6 +173,11 @@ public class MusicalSkeleton extends EntityCreature {
         return false;
     }
 
+    @Override
+    public ItemStack getItemStackFromSlot(EntityEquipmentSlot slotIn) {
+        return this.isKeyboard && !this.isPlaying ? ItemStack.EMPTY : super.getItemStackFromSlot(slotIn);
+    }
+
     @Nullable
     @Override
     public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata) {

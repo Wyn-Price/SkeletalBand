@@ -3,19 +3,32 @@ package com.wynprice.boneophone;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.entity.MusicalSkeletonRenderer;
+import com.wynprice.boneophone.entity.ThrowableNoteEntity;
+import com.wynprice.boneophone.entity.ThrowableNoteRenderer;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.C1UploadMidiFile;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
 import com.wynprice.boneophone.network.S2SyncAndPlayMidi;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.world.NoteBlockEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -26,6 +39,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Objects;
 
 @Mod(modid = Boneophone.MODID, name = Boneophone.NAME, version = Boneophone.VERSION)
 @Mod.EventBusSubscriber
@@ -49,6 +64,9 @@ public class Boneophone {
     public static MidiStream SPOOKY = null;
 
     public static SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
+
+    @GameRegistry.ObjectHolder(MODID + ":throwable_note")
+    public static Item THROWABLE_NOTE;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -88,7 +106,32 @@ public class Boneophone {
                 }
 
             }).start();
+            registerItemColors();
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void registerItemColors() {
+        Minecraft.getMinecraft().getItemColors().registerItemColorHandler(
+                (stack, tintIndex) -> {
+                    float param = stack.getOrCreateSubCompound(MODID).getInteger("Note") / 24F;
+                    int red = (int) ((MathHelper.sin((param + 0.0F) * ((float)Math.PI * 2F)) * 0.65F + 0.35F) * 255F);
+                    int green = (int) ((MathHelper.sin((param + 1F/3F) * ((float)Math.PI * 2F)) * 0.65F + 0.35F) * 255F);
+                    int blue = (int) ((MathHelper.sin((param + 2/3F) * ((float)Math.PI * 2F)) * 0.65F + 0.35F) * 255F);
+
+                    return ((red & 0xFF) << 16) |
+                            ((green & 0xFF) << 8)  |
+                            (blue & 0xFF);
+                },
+                THROWABLE_NOTE
+        );
+    }
+
+    @SubscribeEvent
+    public static void onItemRegister(RegistryEvent.Register<Item> event) {
+        event.getRegistry().register(
+                new ThrowableNote().setRegistryName("throwable_note").setUnlocalizedName("throwable_note").setCreativeTab(CreativeTabs.MISC)
+        );
     }
 
     @SubscribeEvent
@@ -105,9 +148,30 @@ public class Boneophone {
         );
     }
 
+    @SubscribeEvent
+    public static void onNotePlay(NoteBlockEvent.Play event) {
+        World world  = event.getWorld();
+        BlockPos pos = event.getPos();
+        if(!world.isRemote) {
+            for (EntityPlayer player : world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos.up(), pos.add(1, 2, 1)))) {
+                if(player.isSneaking()) {
+                    ItemStack stack = ThrowableNote.fromNote(event.getVanillaNoteId(), event.getInstrument().ordinal());
+                    if(!player.inventory.addItemStackToInventory(stack)) {
+                        player.dropItem(stack, false);
+                    }
+                    event.setCanceled(true);
+                    break;
+                }
+            }
+        }
+    }
+
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(MusicalSkeleton.class, MusicalSkeletonRenderer::new);
+        RenderingRegistry.registerEntityRenderingHandler(ThrowableNoteEntity.class, ThrowableNoteRenderer::new);
+
+        ModelLoader.setCustomModelResourceLocation(THROWABLE_NOTE, 0, new ModelResourceLocation(Objects.requireNonNull(THROWABLE_NOTE.getRegistryName()), "inventory"));
     }
 }
