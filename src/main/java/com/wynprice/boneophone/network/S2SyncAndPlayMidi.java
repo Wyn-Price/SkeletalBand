@@ -13,27 +13,28 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class S2SyncAndPlayMidi implements IMessage {
 
     private int entityID;
+    private byte[] abyteIn;
     private MidiStream midi;
 
     @SuppressWarnings("unused")
     public S2SyncAndPlayMidi() {
     }
 
-    public S2SyncAndPlayMidi(int entityID, MidiStream stream) {
+    public S2SyncAndPlayMidi(int entityID, byte[] abyteIn) {
         this.entityID = entityID;
-        this.midi = stream;
+        this.abyteIn = abyteIn;
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityID);
-        MidiFileHandler.writeMidiFile(this.midi, buf);
+        MidiFileHandler.writeBytes(this.abyteIn, buf);
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityID = buf.readInt();
-        this.midi = MidiFileHandler.readMidiFile(buf);
+        this.midi = MidiFileHandler.readMidiFile(MidiFileHandler.readBytes(buf));
     }
 
     public static class Handler extends WorldModificationsMessageHandler<S2SyncAndPlayMidi, IMessage> {

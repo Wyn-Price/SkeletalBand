@@ -20,7 +20,7 @@ public class C1UploadMidiFile implements IMessage {
     private int entityID;
 
     private File midiFileIn;
-    private MidiStream midiStreamOut;
+    private byte[] abyte;
 
     public C1UploadMidiFile(int entityID, File midiFile) {
         this.entityID = entityID;
@@ -30,20 +30,20 @@ public class C1UploadMidiFile implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityID = buf.readInt();
-        this.midiStreamOut = MidiFileHandler.readMidiFile(buf);
+        this.abyte = MidiFileHandler.readBytes(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityID);
-        MidiFileHandler.writeMidiFile(this.midiFileIn, buf);
+        MidiFileHandler.writeBytes(MidiFileHandler.writeMidiFile(this.midiFileIn), buf);
     }
 
     public static class Handler extends WorldModificationsMessageHandler<C1UploadMidiFile, IMessage> {
 
         @Override
         protected void handleMessage(C1UploadMidiFile message, MessageContext ctx, World world, EntityPlayer player) {
-            Boneophone.NETWORK.sendToDimension(new S2SyncAndPlayMidi(message.entityID, message.midiStreamOut), world.provider.getDimension());
+            Boneophone.NETWORK.sendToDimension(new S2SyncAndPlayMidi(message.entityID, message.abyte), world.provider.getDimension());
         }
     }
 }
