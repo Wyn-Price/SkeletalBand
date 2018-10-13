@@ -54,9 +54,8 @@ public class GuiSelectMidis extends GuiScreen {
     @Override
     public void initGui() {
         List<GuiSelectList.SelectListEntry> list = Lists.newArrayList();
-        Random rnd = new Random();
         for (File file : MidiFileHandler.getAllStreams()) {
-            list.add(new MidiEntry(file, Utils.HSBtoRGB(rnd.nextDouble() * 360D, 0.7F, 0.7F)));
+            list.add(new MidiEntry(file, Utils.HSBtoRGB(new Random().nextInt(360), 0.7F, 0.7F)));
         }
         this.midiSelect = new GuiSelectList(this.width / 2 - 10, this.height / 2, () -> list);
 
