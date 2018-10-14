@@ -59,7 +59,7 @@ public class ThrowableNoteEntity extends EntityThrowable {
 
 
             if(!world.isRemote) {
-                for (AbstractSkeleton skeleton : world.getEntitiesWithinAABB(AbstractSkeleton.class, new AxisAlignedBB(result.hitVec, result.hitVec).grow(7D))) {
+                for (AbstractSkeleton skeleton : world.getEntitiesWithinAABB(AbstractSkeleton.class, new AxisAlignedBB(result.hitVec, result.hitVec).grow(3D))) {
                     skeleton.setDead();
                     MusicalSkeleton mus = new MusicalSkeleton(world);
                     mus.setPositionAndRotation(skeleton.posX, skeleton.posY, skeleton.posZ, skeleton.rotationYaw, skeleton.rotationPitch);
