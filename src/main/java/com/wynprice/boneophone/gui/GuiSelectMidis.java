@@ -2,15 +2,17 @@ package com.wynprice.boneophone.gui;
 
 import com.google.common.collect.Lists;
 import com.sun.javafx.util.Utils;
-import com.wynprice.boneophone.Boneophone;
+import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.network.C1UploadMidiFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 import org.lwjgl.opengl.GL11;
@@ -28,8 +30,30 @@ public class GuiSelectMidis extends GuiScreen {
 
     private GuiSelectList midiSelect;
 
+    private GuiButton playButton;
+
     public GuiSelectMidis(int entityID) {
         this.entityID = entityID;
+    }
+
+    @Override
+    public void initGui() {
+        List<GuiSelectList.SelectListEntry> list = Lists.newArrayList();
+        for (File file : MidiFileHandler.getAllStreams()) {
+            list.add(new MidiEntry(file, Utils.HSBtoRGB(new Random().nextInt(360), 0.7F, 0.7F)));
+        }
+        this.midiSelect = new GuiSelectList(this.width / 8, this.height / 4, (this.width / 4) * 3, 20, this.height / 40, () -> list);//() -> list
+
+        this.playButton = this.addButton(new GuiButtonExt(0, 7, this.height - 25, this.width / 2 - 10, 20, I18n.format(SkeletalBand.MODID + ".uploadplay")));
+        this.addButton(new GuiButtonExt(1, this.width / 2 + 3, this.height - 25, this.width / 2 - 10, 20, I18n.format(SkeletalBand.MODID + ".openmidifolder")));
+
+        super.initGui();
+    }
+
+    @Override
+    public void updateScreen() {
+        this.playButton.enabled = this.midiSelect.getActive() != null;
+        super.updateScreen();
     }
 
     @Override
@@ -46,30 +70,19 @@ public class GuiSelectMidis extends GuiScreen {
     }
 
     @Override
-    public void handleKeyboardInput() throws IOException {
-        super.handleKeyboardInput();
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
         this.midiSelect.handleMouseInput();
-    }
-
-    @Override
-    public void initGui() {
-        List<GuiSelectList.SelectListEntry> list = Lists.newArrayList();
-        for (File file : MidiFileHandler.getAllStreams()) {
-            list.add(new MidiEntry(file, Utils.HSBtoRGB(new Random().nextInt(360), 0.7F, 0.7F)));
-        }
-        this.midiSelect = new GuiSelectList(this.width / 2 - 10, this.height / 2, () -> list);
-
-        this.addButton(new GuiButtonExt(0, this.width / 2 - 100, this.height - 25, "Upload and play"));
-
-        super.initGui();
     }
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         super.actionPerformed(button);
         if(button.id == 0 && this.midiSelect.getActive() instanceof MidiEntry) {
-            Boneophone.NETWORK.sendToServer(new C1UploadMidiFile(this.entityID, ((MidiEntry)this.midiSelect.getActive()).file));
+            SkeletalBand.NETWORK.sendToServer(new C1UploadMidiFile(this.entityID, ((MidiEntry)this.midiSelect.getActive()).file));
             Minecraft.getMinecraft().displayGuiScreen(null);
+        } else if(button.id == 1) {
+            OpenGlHelper.openFile(MidiFileHandler.folder);
         }
     }
 
@@ -93,8 +106,7 @@ public class GuiSelectMidis extends GuiScreen {
 
             mc.renderEngine.bindTexture(new ResourceLocation("textures/particle/particles.png"));
 
-            int h = GuiSelectList.CELL_HEIGHT - 8;
-
+            int h = GuiSelectMidis.this.midiSelect.cellHeight - 8;
 
             buff.pos(x + 4, y + 4, 100)         .tex(0, 4/16F)      .color((float)this.rgb[0], (float)this.rgb[1], (float)this.rgb[2], 1.0F).endVertex();
             buff.pos(x + 4, y + 4 + h, 100)     .tex(0, 5/16F)      .color((float)this.rgb[0], (float)this.rgb[1], (float)this.rgb[2], 1.0F).endVertex();
