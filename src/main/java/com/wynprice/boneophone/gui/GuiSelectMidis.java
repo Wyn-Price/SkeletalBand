@@ -86,6 +86,7 @@ public class GuiSelectMidis extends GuiScreen {
         }
     }
 
+    //Copied from com.sun.javafx.util.Utils class as package renaming was causing issues
     public static double[] HSBtoRGB(double hue, double saturation, double brightness) {
         // normalize the hue
         double normalizedHue = ((hue % 360) + 360) % 360;
@@ -96,7 +97,7 @@ public class GuiSelectMidis extends GuiScreen {
             r = g = b = brightness;
         } else {
             double h = (hue - Math.floor(hue)) * 6.0;
-            double f = h - java.lang.Math.floor(h);
+            double f = h - Math.floor(h);
             double p = brightness * (1.0 - saturation);
             double q = brightness * (1.0 - saturation * f);
             double t = brightness * (1.0 - (saturation * (1.0 - f)));
@@ -133,11 +134,7 @@ public class GuiSelectMidis extends GuiScreen {
                     break;
             }
         }
-        double[] f = new double[3];
-        f[0] = r;
-        f[1] = g;
-        f[2] = b;
-        return f;
+        return new double[]{r, g, b};
     }
 
    class MidiEntry implements GuiSelectList.SelectListEntry {
