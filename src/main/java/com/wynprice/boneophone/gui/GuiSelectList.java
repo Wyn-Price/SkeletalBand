@@ -1,11 +1,9 @@
 package com.wynprice.boneophone.gui;
 
-import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 
@@ -17,10 +15,10 @@ public class GuiSelectList {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    public static final int CELL_WIDTH = 150;
-    public static final int CELL_HEIGHT = 20;
+    public final int width;
+    public final int cellHeight;
 
-    public static final int CELL_MAX = 5;
+    public final int cellMax;
 
     private final int xPos;
     private final int yPos;
@@ -32,9 +30,12 @@ public class GuiSelectList {
 
     private final Supplier<List<SelectListEntry>> listSupplier;
 
-    public GuiSelectList(int xPos, int yPos, Supplier<List<SelectListEntry>> listSupplier) {
+    public GuiSelectList(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<SelectListEntry>> listSupplier) {
         this.xPos = xPos;
         this.yPos = yPos;
+        this.width = width;
+        this.cellHeight = cellHeight;
+        this.cellMax = cellMax;
         this.listSupplier = listSupplier;
     }
 
@@ -44,9 +45,9 @@ public class GuiSelectList {
 
         List<SelectListEntry> entries = this.listSupplier.get();
 
-        int listedCells = Math.min(entries.size(), CELL_MAX);
+        int listedCells = Math.min(entries.size(), cellMax);
 
-        int height = CELL_HEIGHT + (this.open ? listedCells * CELL_HEIGHT : 0);
+        int height = cellHeight + (this.open ? listedCells * cellHeight : 0);
         int borderSize = 1;
         int borderColor = -1;
         int insideColor = 0xFF000000;
@@ -55,7 +56,7 @@ public class GuiSelectList {
         mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         RenderHelper.enableGUIStandardItemLighting();
 
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + CELL_WIDTH, this.yPos + CELL_HEIGHT, insideColor);
+        Gui.drawRect(this.xPos, this.yPos, this.xPos + width, this.yPos + cellHeight, insideColor);
 
         if(this.active != null) {
             this.active.draw(this.xPos, this.yPos);
@@ -64,25 +65,25 @@ public class GuiSelectList {
         if(this.open) {
             for (int i = 0; i < listedCells; i++) {
                 int actual = i + this.scroll;
-                int yStart = this.yPos + CELL_HEIGHT * (i + 1);
-                Gui.drawRect(this.xPos, yStart, this.xPos + CELL_WIDTH, yStart + CELL_HEIGHT, insideSelectionColor);
-                Gui.drawRect(this.xPos, yStart, this.xPos + CELL_WIDTH, yStart + borderSize, borderColor);
+                int yStart = this.yPos + cellHeight * (i + 1);
+                Gui.drawRect(this.xPos, yStart, this.xPos + width, yStart + cellHeight, insideSelectionColor);
+                Gui.drawRect(this.xPos, yStart, this.xPos + width, yStart + borderSize, borderColor);
                 entries.get(actual).draw(this.xPos, yStart);
             }
         }
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + CELL_WIDTH, this.yPos + borderSize, borderColor);
-        Gui.drawRect(this.xPos, this.yPos + height, this.xPos + CELL_WIDTH, this.yPos + height - borderSize, borderColor);
+        Gui.drawRect(this.xPos, this.yPos, this.xPos + width, this.yPos + borderSize, borderColor);
+        Gui.drawRect(this.xPos, this.yPos + height, this.xPos + width, this.yPos + height - borderSize, borderColor);
         Gui.drawRect(this.xPos, this.yPos, this.xPos + borderSize, this.yPos + height, borderColor);
-        Gui.drawRect(this.xPos + CELL_WIDTH, this.yPos, this.xPos + CELL_WIDTH - borderSize, this.yPos + height, borderColor);
+        Gui.drawRect(this.xPos + width, this.yPos, this.xPos + width - borderSize, this.yPos + height, borderColor);
         if(relX > 0 && relY > 0) {
-            if(relX <= CELL_WIDTH){
-                if (relY <= CELL_HEIGHT) {
-                    Gui.drawRect(this.xPos, this.yPos, this.xPos + CELL_WIDTH, this.yPos + CELL_HEIGHT, highlightColor);
+            if(relX <= width){
+                if (relY <= cellHeight) {
+                    Gui.drawRect(this.xPos, this.yPos, this.xPos + width, this.yPos + cellHeight, highlightColor);
                 } else if(this.open) {
-                    for (int i = 0; i < Math.min(CELL_MAX, entries.size()); i++) {
-                        if(relY <= CELL_HEIGHT * (i + 2)) {
-                            int yStart = this.yPos + CELL_HEIGHT * (i + 1);
-                            Gui.drawRect(this.xPos, yStart, this.xPos + CELL_WIDTH, yStart + CELL_HEIGHT, highlightColor);
+                    for (int i = 0; i < Math.min(cellMax, entries.size()); i++) {
+                        if(relY <= cellHeight * (i + 2)) {
+                            int yStart = this.yPos + cellHeight * (i + 1);
+                            Gui.drawRect(this.xPos, yStart, this.xPos + width, yStart + cellHeight, highlightColor);
                             break;
                         }
                     }
@@ -99,14 +100,14 @@ public class GuiSelectList {
             int relX = mouseX - this.xPos;
             int relY = mouseY - this.yPos;
             if(relX > 0 && relY > 0) {
-                if(relX <= CELL_WIDTH ) {
-                    if(relY <= CELL_HEIGHT) {
+                if(relX <= width) {
+                    if(relY <= cellHeight) {
                         this.open = !this.open;
                         return;
                     } else if(this.open){
                         for (int i = 0; i < entries.size(); i++) {
                             int i1 = i + this.scroll;
-                            if(relY <= CELL_HEIGHT * (i1 + 2)) {
+                            if(relY <= cellHeight * (i1 + 2)) {
                                 entries.get(i1).onClicked(relX, relY);
                                 this.active = entries.get(i1);
                                 break;
@@ -130,11 +131,11 @@ public class GuiSelectList {
         int relX = mouseX - this.xPos;
         int relY = mouseY - this.yPos;
         if(relX > 0 && relY > 0) {
-            if(relX <= CELL_WIDTH ) {
-                if(relY <= CELL_HEIGHT) {
+            if(relX <= width) {
+                if(relY <= cellHeight) {
                     return true;
                 } else if(this.open){
-                    return relY <= CELL_HEIGHT * (Math.min(this.listSupplier.get().size(), CELL_MAX) + 1);
+                    return relY <= cellHeight * (Math.min(this.listSupplier.get().size(), cellMax) + 1);
                 }
             }
         }
@@ -143,7 +144,7 @@ public class GuiSelectList {
 
     public void scroll(int amount) {
         this.scroll -= amount;
-        this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.listSupplier.get().size() - CELL_MAX, 0));
+        this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.listSupplier.get().size() - cellMax, 0));
     }
 
     public SelectListEntry getActive() {
