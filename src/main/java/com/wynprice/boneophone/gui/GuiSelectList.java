@@ -80,7 +80,7 @@ public class GuiSelectList {
                 if (relY <= cellHeight) {
                     Gui.drawRect(this.xPos, this.yPos, this.xPos + width, this.yPos + cellHeight, highlightColor);
                 } else if(this.open) {
-                    for (int i = 0; i < Math.min(cellMax, entries.size()); i++) {
+                    for (int i = 0; i < Math.min(this.cellMax, entries.size()); i++) {
                         if(relY <= cellHeight * (i + 2)) {
                             int yStart = this.yPos + cellHeight * (i + 1);
                             Gui.drawRect(this.xPos, yStart, this.xPos + width, yStart + cellHeight, highlightColor);
@@ -106,8 +106,8 @@ public class GuiSelectList {
                         return;
                     } else if(this.open){
                         for (int i = 0; i < entries.size(); i++) {
-                            int i1 = i + this.scroll;
-                            if(relY <= cellHeight * (i1 + 2)) {
+                            if(relY <= cellHeight * (i + 2)) {
+                                int i1 = i + this.scroll;
                                 entries.get(i1).onClicked(relX, relY);
                                 this.active = entries.get(i1);
                                 break;
