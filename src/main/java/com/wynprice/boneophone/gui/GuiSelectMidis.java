@@ -40,7 +40,7 @@ public class GuiSelectMidis extends GuiScreen {
     public void initGui() {
         List<GuiSelectList.SelectListEntry> list = Lists.newArrayList();
         for (File file : MidiFileHandler.getAllStreams()) {
-            list.add(new MidiEntry(file, Utils.HSBtoRGB(new Random().nextInt(360), 0.7F, 0.7F)));
+            list.add(new MidiEntry(file, HSBtoRGB(new Random().nextInt(360), 0.7F, 0.7F)));
         }
         this.midiSelect = new GuiSelectList(this.width / 8, this.height / 4, (this.width / 4) * 3, 20, this.height / 40, () -> list);//() -> list
 
@@ -84,6 +84,60 @@ public class GuiSelectMidis extends GuiScreen {
         } else if(button.id == 1) {
             OpenGlHelper.openFile(MidiFileHandler.folder);
         }
+    }
+
+    public static double[] HSBtoRGB(double hue, double saturation, double brightness) {
+        // normalize the hue
+        double normalizedHue = ((hue % 360) + 360) % 360;
+        hue = normalizedHue/360;
+
+        double r = 0, g = 0, b = 0;
+        if (saturation == 0) {
+            r = g = b = brightness;
+        } else {
+            double h = (hue - Math.floor(hue)) * 6.0;
+            double f = h - java.lang.Math.floor(h);
+            double p = brightness * (1.0 - saturation);
+            double q = brightness * (1.0 - saturation * f);
+            double t = brightness * (1.0 - (saturation * (1.0 - f)));
+            switch ((int) h) {
+                case 0:
+                    r = brightness;
+                    g = t;
+                    b = p;
+                    break;
+                case 1:
+                    r = q;
+                    g = brightness;
+                    b = p;
+                    break;
+                case 2:
+                    r = p;
+                    g = brightness;
+                    b = t;
+                    break;
+                case 3:
+                    r = p;
+                    g = q;
+                    b = brightness;
+                    break;
+                case 4:
+                    r = t;
+                    g = p;
+                    b = brightness;
+                    break;
+                case 5:
+                    r = brightness;
+                    g = p;
+                    b = q;
+                    break;
+            }
+        }
+        double[] f = new double[3];
+        f[0] = r;
+        f[1] = g;
+        f[2] = b;
+        return f;
     }
 
    class MidiEntry implements GuiSelectList.SelectListEntry {
