@@ -133,8 +133,7 @@ public class MusicalSkeleton extends EntityCreature {
 
 
             for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks)) {
-                float f = (float)Math.pow(2.0D, (tone.getKey() / 12.0D));
-                Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(tone.getEvent(), SoundCategory.RECORDS, 2F, f, this.getPosition()));
+                this.playSound(tone.getEvent(), (float) Math.pow(2.0D, (tone.getKey() / 12.0D)));
             }
 
 
@@ -162,15 +161,26 @@ public class MusicalSkeleton extends EntityCreature {
         }
     }
 
+    @SideOnly(Side.CLIENT)
+    private void playSound(SoundEvent event, float pitch) {
+        Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(event, SoundCategory.RECORDS, 2F, pitch, this.getPosition()));
+
+    }
+
     @Override
     protected boolean processInteract(EntityPlayer player, EnumHand hand) {
         if(this.isPlaying && this.world.isRemote) {
-            Minecraft.getMinecraft().displayGuiScreen(new GuiSelectMidis(this.getEntityId()));
+            this.displayMidiGui();
             return true;
         } else if(this.isKeyboard) {
             return this.freind.processInteract(player, hand);
         }
         return false;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void displayMidiGui() {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSelectMidis(this.getEntityId()));
     }
 
     @Override

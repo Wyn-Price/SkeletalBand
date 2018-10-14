@@ -78,14 +78,12 @@ public class SkeletalBand {
         NETWORK.registerMessage(new S0MusicalSkeletonStateUpdate.Handler(), S0MusicalSkeletonStateUpdate.class, 0, Side.CLIENT);
         NETWORK.registerMessage(new C1UploadMidiFile.Handler(), C1UploadMidiFile.class, 1, Side.SERVER);
         NETWORK.registerMessage(new S2SyncAndPlayMidi.Handler(), S2SyncAndPlayMidi.class, 2, Side.CLIENT);
-
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        SPOOKY = MidiStream.getMidi(new ResourceLocation(MODID, "spook"));
-
         if (FMLCommonHandler.instance().getSide().isClient()) {
+            SPOOKY = MidiStream.getMidi(new ResourceLocation(MODID, "spook"));
             new Thread(() -> {
                 String base = "https://raw.githubusercontent.com/Wyn-Price/SkeletalBand/master/midis/";
                 try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new URL(base + "midis.json").openStream()))) {
