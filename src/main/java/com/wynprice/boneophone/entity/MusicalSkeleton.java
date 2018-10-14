@@ -134,7 +134,7 @@ public class MusicalSkeleton extends EntityCreature {
 
             for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks)) {
                 float f = (float)Math.pow(2.0D, (tone.getKey() / 12.0D));
-                Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(tone.getEvent(), SoundCategory.RECORDS, 1F, f, this.getPosition()));
+                Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(tone.getEvent(), SoundCategory.RECORDS, 2F, f, this.getPosition()));
             }
 
 
