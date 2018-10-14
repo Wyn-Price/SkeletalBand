@@ -6,7 +6,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod.EventBusSubscriber(modid = Boneophone.MODID)
+@Mod.EventBusSubscriber(modid = SkeletalBand.MODID)
 public class SoundHandler {
 
     public static SoundEvent[] BONEOPHONE_OCTAVES = new SoundEvent[11];
@@ -18,7 +18,7 @@ public class SoundHandler {
             if(name.length() == 1) {
                 name = "0" + name;
             }
-            ResourceLocation loc = new ResourceLocation(Boneophone.MODID, "boneophone" + name);
+            ResourceLocation loc = new ResourceLocation(SkeletalBand.MODID, "boneophone" + name);
             SoundEvent soundEvent = new SoundEvent(loc).setRegistryName(loc);
             event.getRegistry().register(soundEvent);
             BONEOPHONE_OCTAVES[i] = soundEvent;

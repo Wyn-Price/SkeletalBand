@@ -22,7 +22,7 @@ public class ThrowableNote extends Item {
         }
         worldIn.playSound(null, playerIn.posX, playerIn.posY, playerIn.posZ, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
-        NBTTagCompound nbt = stack.getOrCreateSubCompound(Boneophone.MODID);
+        NBTTagCompound nbt = stack.getOrCreateSubCompound(SkeletalBand.MODID);
 
         ThrowableNoteEntity throwableNote = new ThrowableNoteEntity(worldIn, playerIn, nbt.getInteger("Note"), nbt.getInteger("Instrument"));
         throwableNote.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
@@ -33,14 +33,14 @@ public class ThrowableNote extends Item {
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        NBTTagCompound nbt = stack.getOrCreateSubCompound(Boneophone.MODID);
-        String instrument = I18n.format(Boneophone.MODID + ".instrument." + nbt.getInteger("Instrument"));
+        NBTTagCompound nbt = stack.getOrCreateSubCompound(SkeletalBand.MODID);
+        String instrument = I18n.format(SkeletalBand.MODID + ".instrument." + nbt.getInteger("Instrument"));
         return instrument + " " + nbt.getInteger("Note");
     }
 
     public static ItemStack fromNote(int note, int instrument) {
-        ItemStack stack = new ItemStack(Boneophone.THROWABLE_NOTE);
-        NBTTagCompound nbt = stack.getOrCreateSubCompound(Boneophone.MODID);
+        ItemStack stack = new ItemStack(SkeletalBand.THROWABLE_NOTE);
+        NBTTagCompound nbt = stack.getOrCreateSubCompound(SkeletalBand.MODID);
         nbt.setInteger("Note", note);
         nbt.setInteger("Instrument", instrument);
         return stack;

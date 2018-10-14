@@ -1,6 +1,6 @@
 package com.wynprice.boneophone.entity;
 
-import com.wynprice.boneophone.Boneophone;
+import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.ThrowableNote;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 
 public class ThrowableNoteRenderer extends RenderSnowball<ThrowableNoteEntity> {
     public ThrowableNoteRenderer(RenderManager renderManagerIn) {
-        super(renderManagerIn, Boneophone.THROWABLE_NOTE, Minecraft.getMinecraft().getRenderItem());
+        super(renderManagerIn, SkeletalBand.THROWABLE_NOTE, Minecraft.getMinecraft().getRenderItem());
     }
 
     @Override

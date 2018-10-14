@@ -2,9 +2,8 @@ package com.wynprice.boneophone.midi;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.wynprice.boneophone.Boneophone;
+import com.wynprice.boneophone.SkeletalBand;
 import io.netty.buffer.ByteBuf;
-import io.netty.util.internal.PlatformDependent;
 
 import java.io.*;
 import java.util.List;
@@ -73,7 +72,7 @@ public class MidiFileHandler {
                 try(GZIPOutputStream gzip = new GZIPOutputStream(out)) {
                     gzip.write(raw);
                 }
-                Boneophone.LOGGER.info("Written midi file, took {}ms", System.currentTimeMillis() - start);
+                SkeletalBand.LOGGER.info("Written midi file, took {}ms", System.currentTimeMillis() - start);
                 return out.toByteArray();
             }
         } catch (IOException e) {
@@ -148,7 +147,7 @@ public class MidiFileHandler {
                     streams[entry.getKey()] = entry.getValue().toArray(new MidiStream.MidiTone[0]);
                 }
 
-                Boneophone.LOGGER.info("Read midi file, took {}ms", System.currentTimeMillis() - start);
+                SkeletalBand.LOGGER.info("Read midi file, took {}ms", System.currentTimeMillis() - start);
 
                 return new MidiStream(streams, ratio, min, max);
             }

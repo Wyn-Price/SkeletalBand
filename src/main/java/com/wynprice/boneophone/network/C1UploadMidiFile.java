@@ -1,8 +1,7 @@
 package com.wynprice.boneophone.network;
 
-import com.wynprice.boneophone.Boneophone;
+import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.midi.MidiFileHandler;
-import com.wynprice.boneophone.midi.MidiStream;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -43,7 +42,7 @@ public class C1UploadMidiFile implements IMessage {
 
         @Override
         protected void handleMessage(C1UploadMidiFile message, MessageContext ctx, World world, EntityPlayer player) {
-            Boneophone.NETWORK.sendToDimension(new S2SyncAndPlayMidi(message.entityID, message.abyte), world.provider.getDimension());
+            SkeletalBand.NETWORK.sendToDimension(new S2SyncAndPlayMidi(message.entityID, message.abyte), world.provider.getDimension());
         }
     }
 }

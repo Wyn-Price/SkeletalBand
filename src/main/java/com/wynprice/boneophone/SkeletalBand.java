@@ -52,11 +52,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.Objects;
 
-@Mod(modid = Boneophone.MODID, name = Boneophone.NAME, version = Boneophone.VERSION)
+@Mod(modid = SkeletalBand.MODID, name = SkeletalBand.NAME, version = SkeletalBand.VERSION)
 @Mod.EventBusSubscriber
-public class Boneophone {
-    public static final String MODID = "boneophone";
-    public static final String NAME = "Boneophone";
+public class SkeletalBand {
+    public static final String MODID = "skeletalband";
+    public static final String NAME = "SkeletalBand";
     public static final String VERSION = "1.0";
 
     public static Logger LOGGER;
@@ -87,7 +87,7 @@ public class Boneophone {
 
         if (FMLCommonHandler.instance().getSide().isClient()) {
             new Thread(() -> {
-                String base = "https://raw.githubusercontent.com/Wyn-Price/Boneophone/master/midis/";
+                String base = "https://raw.githubusercontent.com/Wyn-Price/SkeletalBand/master/midis/";
                 try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new URL(base + "midis.json").openStream()))) {
                     JsonObject json = new JsonParser().parse(bufferedReader).getAsJsonObject();
                     LOGGER.info("Downloaded midi json file");

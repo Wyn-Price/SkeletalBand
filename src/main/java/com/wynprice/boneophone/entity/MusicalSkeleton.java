@@ -1,6 +1,6 @@
 package com.wynprice.boneophone.entity;
 
-import com.wynprice.boneophone.Boneophone;
+import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.gui.GuiSelectMidis;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
@@ -44,7 +44,7 @@ public class MusicalSkeleton extends EntityCreature {
 
     public float rx, ry, lx, ly;
 
-    public MidiStream currentlyPlaying = Boneophone.SPOOKY;
+    public MidiStream currentlyPlaying = SkeletalBand.SPOOKY;
     public int playingTicks = 0;
 
     public MusicalSkeleton(World worldIn) {
@@ -268,8 +268,8 @@ public class MusicalSkeleton extends EntityCreature {
             if(this.skeleton.getDistanceSq(this.skeleton.freind) < 4.0D && !this.skeleton.freind.isPlaying && !this.skeleton.freind.isKeyboard) {
                 this.playing = true;
 
-                Boneophone.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.skeleton.getEntityId(), this.skeleton.freind.getEntityId(), true, false));
-                Boneophone.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.skeleton.freind.getEntityId(), this.skeleton.getEntityId(), false, true));
+                SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.skeleton.getEntityId(), this.skeleton.freind.getEntityId(), true, false));
+                SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.skeleton.freind.getEntityId(), this.skeleton.getEntityId(), false, true));
 
                 this.skeleton.isPlaying = true;
                 this.skeleton.freind.isKeyboard = true;

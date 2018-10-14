@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "boneophone:items/throwable_note"
+    "layer0": "skeletalband:items/throwable_note"
   }
 }

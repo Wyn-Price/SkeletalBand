@@ -2,77 +2,77 @@
   "boneophone00": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone00",
+      "name": "skeletalband:boneophone00",
       "stream": false
     }]
   },
   "boneophone01": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone01",
+      "name": "skeletalband:boneophone01",
       "stream": false
     }]
   },
   "boneophone02": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone02",
+      "name": "skeletalband:boneophone02",
       "stream": false
     }]
   },
   "boneophone03": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone03",
+      "name": "skeletalband:boneophone03",
       "stream": false
     }]
   },
   "boneophone04": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone04",
+      "name": "skeletalband:boneophone04",
       "stream": false
     }]
   },
   "boneophone05": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone05",
+      "name": "skeletalband:boneophone05",
       "stream": false
     }]
   },
   "boneophone06": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone06",
+      "name": "skeletalband:boneophone06",
       "stream": false
     }]
   },
   "boneophone07": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone07",
+      "name": "skeletalband:boneophone07",
       "stream": false
     }]
   },
   "boneophone08": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone08",
+      "name": "skeletalband:boneophone08",
       "stream": false
     }]
   },
   "boneophone09": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone09",
+      "name": "skeletalband:boneophone09",
       "stream": false
     }]
   },
   "boneophone10": {
     "category": "master",
     "sounds": [{
-      "name": "boneophone:boneophone10",
+      "name": "skeletalband:boneophone10",
       "stream": false
     }]
   }
