@@ -128,7 +128,19 @@ public class SkeletalBand {
     @SubscribeEvent
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
         event.getRegistry().register(
-                new ThrowableNote().setRegistryName("throwable_note").setUnlocalizedName("throwable_note").setCreativeTab(CreativeTabs.MISC)
+                new ThrowableNote().setRegistryName("throwable_note").setUnlocalizedName("throwable_note").setCreativeTab(new CreativeTabs(MODID) {
+
+                    @Override
+                    @SideOnly(Side.CLIENT)
+                    public ItemStack getIconItemStack() {
+                        return ThrowableNote.fromNote((int) ((Minecraft.getMinecraft().world.getTotalWorldTime() / 20) % 25), 0);
+                    }
+
+                    @Override
+                    public ItemStack getTabIconItem() {
+                        return ItemStack.EMPTY;
+                    }
+                })
         );
     }
 
@@ -143,6 +155,7 @@ public class SkeletalBand {
                         .factory(MusicalSkeleton::new)
                         .egg(0xC1C1C1, 0x494949) //TODO: better color
                         .build(),
+
                 EntityEntryBuilder.create()
                         .id(new ResourceLocation(MODID, "throwable_note"), 1)
                         .name("throwable_note")

@@ -1,15 +1,13 @@
 package com.wynprice.boneophone;
 
 import com.wynprice.boneophone.entity.ThrowableNoteEntity;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.*;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 
@@ -31,6 +29,22 @@ public class ThrowableNote extends Item {
         }
 
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+    }
+
+    @Override
+    public boolean getHasSubtypes() {
+        return true;
+    }
+
+    @Override
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
+        if(this.isInCreativeTab(tab)) {
+            for (int instrument = 0; instrument < ThrowableNoteEntity.INSTRUMENTS.size(); instrument++) {
+                for (int note = 0; note < 25; note++) {
+                    items.add(fromNote(note, instrument));
+                }
+            }
+        }
     }
 
     @Override
