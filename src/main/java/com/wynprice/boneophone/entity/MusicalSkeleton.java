@@ -157,7 +157,7 @@ public class MusicalSkeleton extends EntityCreature {
             this.rotationYawHead = 0;
         }
 
-        if(this.freind != null && this.freind.freind != this) {
+        if(this.freind != null && (this.freind.freind != this || this.freind.isDead)) {
             this.isPlaying = false;
             this.isKeyboard = false;
             this.freind = null;
