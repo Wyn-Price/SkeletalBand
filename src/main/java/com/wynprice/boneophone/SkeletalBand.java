@@ -134,7 +134,7 @@ public class SkeletalBand {
 
     @SubscribeEvent
     public static void onEntityRegister(RegistryEvent.Register<EntityEntry> event) {
-        event.getRegistry().register(
+        event.getRegistry().registerAll(
                 EntityEntryBuilder.create()
                         .id(new ResourceLocation(MODID, "musical_skeleton"), 0)
                         .name("musical_skeleton")
@@ -142,6 +142,13 @@ public class SkeletalBand {
                         .entity(MusicalSkeleton.class)
                         .factory(MusicalSkeleton::new)
                         .egg(0xC1C1C1, 0x494949) //TODO: better color
+                        .build(),
+                EntityEntryBuilder.create()
+                        .id(new ResourceLocation(MODID, "throwable_note"), 1)
+                        .name("throwable_note")
+                        .tracker(64, 1, true)
+                        .entity(ThrowableNoteEntity.class)
+                        .factory(ThrowableNoteEntity::new)
                         .build()
         );
     }

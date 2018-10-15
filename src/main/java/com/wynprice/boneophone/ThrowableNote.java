@@ -24,9 +24,11 @@ public class ThrowableNote extends Item {
 
         NBTTagCompound nbt = stack.getOrCreateSubCompound(SkeletalBand.MODID);
 
-        ThrowableNoteEntity throwableNote = new ThrowableNoteEntity(worldIn, playerIn, nbt.getInteger("Note"), nbt.getInteger("Instrument"));
-        throwableNote.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
-        worldIn.spawnEntity(throwableNote);
+        if(!worldIn.isRemote) {
+            ThrowableNoteEntity throwableNote = new ThrowableNoteEntity(worldIn, playerIn, nbt.getInteger("Note"), nbt.getInteger("Instrument"));
+            throwableNote.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
+            worldIn.spawnEntity(throwableNote);
+        }
 
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
