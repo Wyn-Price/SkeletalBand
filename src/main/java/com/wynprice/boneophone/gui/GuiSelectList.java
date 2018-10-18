@@ -43,7 +43,7 @@ public class GuiSelectList {
         this.yPos = yPos;
         this.width = width;
         this.cellHeight = cellHeight;
-        this.cellMax = cellMax;
+        this.cellMax = Math.max(cellMax, 1);
         this.listSupplier = listSupplier;
     }
 
