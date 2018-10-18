@@ -57,7 +57,7 @@ import java.util.Objects;
 public class SkeletalBand {
     public static final String MODID = "skeletalband";
     public static final String NAME = "SkeletalBand";
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "1.0.4";
 
     public static Logger LOGGER;
 
@@ -159,7 +159,7 @@ public class SkeletalBand {
                 EntityEntryBuilder.create()
                         .id(new ResourceLocation(MODID, "throwable_note"), 1)
                         .name("throwable_note")
-                        .tracker(64, 1, true)
+                        .tracker(64, 10, true)
                         .entity(ThrowableNoteEntity.class)
                         .factory(ThrowableNoteEntity::new)
                         .build()
