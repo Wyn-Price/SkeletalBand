@@ -157,7 +157,7 @@ public class GuiSelectMidis extends GuiScreen {
 
             mc.renderEngine.bindTexture(new ResourceLocation("textures/particle/particles.png"));
 
-            int h = GuiSelectMidis.this.midiSelect.cellHeight - 8;
+            int h = 12;
 
             buff.pos(x + 4, y + 4, 100)         .tex(0, 4/16F)      .color((float)this.rgb[0], (float)this.rgb[1], (float)this.rgb[2], 1.0F).endVertex();
             buff.pos(x + 4, y + 4 + h, 100)     .tex(0, 5/16F)      .color((float)this.rgb[0], (float)this.rgb[1], (float)this.rgb[2], 1.0F).endVertex();

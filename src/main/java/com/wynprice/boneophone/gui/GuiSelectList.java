@@ -5,26 +5,24 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static org.lwjgl.opengl.GL11.*;
-
 public class GuiSelectList {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    public static final float SCROLL_AMOUNT = 0.4F;
+    private static final float SCROLL_AMOUNT = 0.4F;
 
-    public final int width;
-    public final int cellHeight;
+    private final int width;
+    private final int cellHeight;
 
-    public final int cellMax;
+    private final int cellMax;
 
     private final int xPos;
     private final int yPos;
@@ -49,22 +47,25 @@ public class GuiSelectList {
 
     public void render(int mouseX, int mouseY) {
         List<SelectListEntry> entries = this.listSupplier.get();
-        int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
 
-        int ySize = (entries.size() - this.cellMax) * this.cellHeight;
+        int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
         int totalHeight = height - this.cellHeight;
 
+        float scrollLength = -1;
+        float scrollYStart = -1;
         int scrollBarWidth = 6;
         int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
 
-
-        float scrollLength = MathHelper.clamp(totalHeight * totalHeight / ySize, 32, totalHeight - 8);
-        float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
-        if (scrollYStart < this.yPos) {
-            scrollYStart = this.yPos;
+        if(entries.size() > this.cellMax) {
+            int ySize = (entries.size() - this.cellMax) * this.cellHeight;
+            scrollLength = MathHelper.clamp(totalHeight * totalHeight / ySize, 32, totalHeight - 8);
+            scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
+            if (scrollYStart < this.yPos) {
+                scrollYStart = this.yPos;
+            }
         }
 
-        if(this.lastYClicked != -1) {
+        if(this.lastYClicked != -1 && entries.size() > this.cellMax) {
             if(!Mouse.isButtonDown(0)) {
                 this.lastYClicked = -1;
             } else {
@@ -82,22 +83,22 @@ public class GuiSelectList {
             Minecraft.getMinecraft().getFramebuffer().enableStencil();
         }
 
-        glEnable(GL_STENCIL_TEST);
-        glColorMask(false, false, false, false);
-        glDepthMask(false);
-        glStencilFunc(GL_NEVER, 1, 0xFF);
-        glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
+        GL11.glEnable(GL11.GL_STENCIL_TEST);
+        GL11.glColorMask(false, false, false, false);
+        GL11.glDepthMask(false);
+        GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF);
+        GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_KEEP, GL11.GL_KEEP);
 
-        glStencilMask(0xFF);
-        glClear(GL_STENCIL_BUFFER_BIT);
+        GL11.glStencilMask(0xFF);
+        GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
 
         Gui.drawRect(this.xPos, this.yPos + this.cellHeight, this.xPos + this.width, this.yPos + height, -1);
 
-        glColorMask(true, true, true, true);
-        glDepthMask(true);
-        glStencilMask(0x00);
+        GL11.glColorMask(true, true, true, true);
+        GL11.glDepthMask(true);
+        GL11.glStencilMask(0x00);
 
-        glStencilFunc(GL_EQUAL, 1, 0xFF);
+        GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF);
 
         int relX = mouseX - this.xPos;
         int relY = mouseY - this.yPos;
@@ -119,7 +120,7 @@ public class GuiSelectList {
             }
         }
 
-        boolean highlighedScrollbar = false;
+        boolean highlighedScrollbar = this.lastYClicked != -1;
 
         if(relX > 0 && relY > 0) {
             if(relX <= this.width){
@@ -128,7 +129,7 @@ public class GuiSelectList {
                 } else if(this.open) {
                     if(entries.size() > this.cellMax && mouseX >= scrollBarLeft && mouseX <= scrollBarLeft + scrollBarWidth && mouseY >= scrollYStart && mouseY <= scrollYStart + scrollLength) {
                         highlighedScrollbar = true;
-                    } else {
+                    } else if(this.lastYClicked == -1) {
                         for (int i = 0; i < entries.size(); i++) {
                             if(relY <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
                                 int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight);
@@ -161,7 +162,7 @@ public class GuiSelectList {
 
         RenderHelper.disableStandardItemLighting();
 
-        glDisable(GL_STENCIL_TEST);
+        GL11.glDisable(GL11.GL_STENCIL_TEST);
 
         GlStateManager.disableDepth();
         Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, insideColor);
@@ -183,14 +184,20 @@ public class GuiSelectList {
             List<SelectListEntry> entries = this.listSupplier.get();
 
             int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
-            int ySize = (entries.size() - this.cellMax) * this.cellHeight;
             int totalHeight = height - this.cellHeight;
+
+            float scrollLength = -1;
+            float scrollYStart = -1;
             int scrollBarWidth = 6;
             int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
-            float scrollLength = MathHelper.clamp(totalHeight * totalHeight / ySize, 32, totalHeight - 8);
-            float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((this.listSupplier.get().size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
-            if (scrollYStart < this.yPos) {
-                scrollYStart = this.yPos;
+
+            if(entries.size() > this.cellMax) {
+                int ySize = (entries.size() - this.cellMax) * this.cellHeight;
+                scrollLength = MathHelper.clamp(totalHeight * totalHeight / ySize, 32, totalHeight - 8);
+                scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
+                if (scrollYStart < this.yPos) {
+                    scrollYStart = this.yPos;
+                }
             }
 
             if(this.open && entries.size() > this.cellMax && mouseX >= scrollBarLeft && mouseX <= scrollBarLeft + scrollBarWidth && mouseY >= scrollYStart && mouseY <= scrollYStart + scrollLength) {
