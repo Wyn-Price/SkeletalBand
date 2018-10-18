@@ -11,7 +11,7 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
 
 
     public MusicalSkeletonRenderer(RenderManager renderManagerIn) {
-        super(renderManagerIn, new MusicalSkeletonModel(0F), 0.1F);
+        super(renderManagerIn, new MusicalSkeletonModel(0F), 0.5F);
     }
 
 
