@@ -114,9 +114,12 @@ public class GuiSelectList {
         if(this.open) {
             for (int i = 0; i < entries.size(); i++) {
                 int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight);
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, insideSelectionColor);
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, borderColor);
-                entries.get(i).draw(this.xPos, yStart);
+                //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
+                if(yStart + 5 >= this.xPos && yStart - 5 <= this.xPos + height) {
+                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, insideSelectionColor);
+                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, borderColor);
+                    entries.get(i).draw(this.xPos, yStart);
+                }
             }
         }
 
