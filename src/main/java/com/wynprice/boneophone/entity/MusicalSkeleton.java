@@ -75,7 +75,13 @@ public class MusicalSkeleton extends EntityCreature {
         this.rightTicksFromHit++;
         this.leftTicksFromHit++;
 
-        this.playingTicks++;
+        if(this.isKeyboard) {
+            this.setSize(1.0F, 0.3F);
+        } else if(this.isPlaying) {
+            this.setSize(0.6F, 1.35F);
+        } else {
+            this.setSize(0.6F, 1.8F);
+        }
 
         if(this.world.isRemote && this.isPlaying) {
             if(!this.paused) {
@@ -317,11 +323,6 @@ public class MusicalSkeleton extends EntityCreature {
         @Override
         public boolean shouldContinueExecuting() {
             return this.skeleton.freind == null || this.skeleton.freind.isDead || this.skeleton.freind.freind != this.skeleton;
-        }
-
-        @Override
-        public void resetTask() {
-            this.playing = false;
         }
     }
 }
