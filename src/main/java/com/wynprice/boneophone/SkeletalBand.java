@@ -58,7 +58,7 @@ import java.util.Objects;
 public class SkeletalBand {
     public static final String MODID = "skeletalband";
     public static final String NAME = "SkeletalBand";
-    public static final String VERSION = "1.0.4";
+    public static final String VERSION = "1.0.5";
 
     public static Logger LOGGER;
 
