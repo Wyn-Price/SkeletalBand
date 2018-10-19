@@ -46,38 +46,33 @@ public class MidiFileHandler {
 
         long start = System.currentTimeMillis();
 
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            try(DataOutputStream dos = new DataOutputStream(baos)) {
-               dos.writeFloat(stream.midiTicksPerMcTick);
-               dos.writeInt(stream.min);
-               dos.writeInt(stream.max);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try(DataOutputStream dos = new DataOutputStream(new GZIPOutputStream(baos))) {
+            dos.writeFloat(stream.midiTicksPerMcTick);
+            dos.writeInt(stream.min);
+            dos.writeInt(stream.max);
 
-               dos.writeInt(stream.data.length);
+            dos.writeInt(stream.data.length);
 
-                for (int i = 0; i < stream.data.length; i++) {
-                    MidiStream.MidiTone[] dataum = stream.data[i];
-                    if(dataum.length != 0) {
-                       dos.writeInt(i);
-                       dos.writeInt(dataum.length);
-                        for (MidiStream.MidiTone midiTone : dataum) {
-                           dos.writeInt(midiTone.key);
-                        }
+            for (int i = 0; i < stream.data.length; i++) {
+                MidiStream.MidiTone[] dataum = stream.data[i];
+                if(dataum.length != 0) {
+                    dos.writeInt(i);
+                    dos.writeInt(dataum.length);
+                    for (MidiStream.MidiTone midiTone : dataum) {
+                        dos.writeInt(midiTone.key);
                     }
                 }
-               dos.writeInt(-1); //-1 to signify the end of the stream
-
-                byte[] raw = baos.toByteArray();
-                ByteArrayOutputStream out = new ByteArrayOutputStream(raw.length);
-                try(GZIPOutputStream gzip = new GZIPOutputStream(out)) {
-                    gzip.write(raw);
-                }
-                SkeletalBand.LOGGER.info("Written midi file, took {}ms", System.currentTimeMillis() - start);
-                return out.toByteArray();
             }
-        } catch (IOException e) {
+
+            dos.writeInt(-1); //-1 to signify the end of the stream
+
+            SkeletalBand.LOGGER.info("Written midi file, took {}ms", System.currentTimeMillis() - start);
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
-        throw new RuntimeException("Error writing midi file to byte array");
+        return baos.toByteArray();
     }
 
     public static void writeBytes(byte[] bytes, ByteBuf buf) {
