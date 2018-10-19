@@ -43,7 +43,7 @@ public class MidiSplitNetworkHandler {
         if(gotAll) {
             //Reconstruct
 
-            byte[] outData = new byte[(30000 * abyte.length) - 1 + abyte[abyte.length - 1].length];
+            byte[] outData = new byte[30000 * (abyte.length - 1) + abyte[abyte.length - 1].length];
 
             for (int i = 0; i < abyte.length; i++) {
                 byte[] oData = abyte[i];
