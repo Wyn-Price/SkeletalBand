@@ -38,6 +38,7 @@ public class MusicalSkeleton extends EntityCreature {
     public float rightTargetHit = -5;
     public float leftTargetHit = -5;
 
+    public boolean paused;
 
     public float prevRightTargetHit = -5;
     public float prevLeftTargetHit = -5;
@@ -77,68 +78,70 @@ public class MusicalSkeleton extends EntityCreature {
         this.playingTicks++;
 
         if(this.world.isRemote && this.isPlaying) {
-            boolean usedLeft = false;
-            boolean usedRight = false;
+            if(!this.paused) {
+                boolean usedLeft = false;
+                boolean usedRight = false;
 
-            float rightNote = this.rightTargetHit;
-            float leftNote = this.leftTargetHit;
+                float rightNote = this.rightTargetHit;
+                float leftNote = this.leftTargetHit;
 
-            boolean usedSecondLeft = false;
-            boolean usedSecondRight = false;
+                boolean usedSecondLeft = false;
+                boolean usedSecondRight = false;
 
-            float secondRightNote = -1F;
-            float secondLeftNote = -1F;
+                float secondRightNote = -1F;
+                float secondLeftNote = -1F;
 
-            for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks + ticksToHit)) {
-                if(!usedLeft || !usedRight || !usedSecondLeft || !usedSecondRight) {
-                    if(tone.getPosition() < 0.5F) { //I would have thought it to be >= 0.5, however in practice this seems not to be the case todo: investigate that
-                        if(!usedRight) {
-                            rightNote = tone.getPosition();
-                            usedRight = true;
-                        } else if(!usedSecondRight) {
-                            secondRightNote = tone.getPosition();
-                            usedSecondRight = true;
-                        }
-                    } else {
-                        if(!usedLeft) {
-                            leftNote = tone.getPosition();
-                            usedLeft = true;
-                        } else if(!usedSecondLeft) {
-                            secondLeftNote = tone.getPosition();
-                            usedSecondLeft = true;
+                for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks + ticksToHit)) {
+                    if (!usedLeft || !usedRight || !usedSecondLeft || !usedSecondRight) {
+                        if (tone.getPosition() < 0.5F) { //I would have thought it to be >= 0.5, however in practice this seems not to be the case todo: investigate that
+                            if (!usedRight) {
+                                rightNote = tone.getPosition();
+                                usedRight = true;
+                            } else if (!usedSecondRight) {
+                                secondRightNote = tone.getPosition();
+                                usedSecondRight = true;
+                            }
+                        } else {
+                            if (!usedLeft) {
+                                leftNote = tone.getPosition();
+                                usedLeft = true;
+                            } else if (!usedSecondLeft) {
+                                secondLeftNote = tone.getPosition();
+                                usedSecondLeft = true;
+                            }
                         }
                     }
                 }
+
+
+                //If one hand isn't in use, but has more than one note, have the other hand fill in
+                if (!usedRight && usedSecondLeft) {
+                    usedRight = true;
+                    rightNote = secondLeftNote;
+                }
+
+                if (!usedLeft && usedSecondRight) {
+                    usedLeft = true;
+                    leftNote = secondRightNote;
+                }
+
+                if (usedRight) {
+                    this.prevRightTargetHit = this.rightTargetHit;
+                    this.rightTicksFromHit = 0;
+                    this.rightTargetHit = rightNote;
+                }
+                if (usedLeft) {
+                    this.prevLeftTargetHit = this.leftTargetHit;
+                    this.leftTicksFromHit = 0;
+                    this.leftTargetHit = leftNote;
+                }
+
+                for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks)) {
+                    this.playRawSound(tone.getEvent(), 2F * (tone.getRawKey() / 128F) + 0.5F, (float) Math.pow(2.0D, (tone.getKey() / 12.0D)));
+                }
+
+                this.playingTicks++;
             }
-
-
-            //If one hand isn't in use, but has more than one note, have the other hand fill in
-            if(!usedRight && usedSecondLeft) {
-                usedRight = true;
-                rightNote = secondLeftNote;
-            }
-
-            if(!usedLeft && usedSecondRight) {
-                usedLeft = true;
-                leftNote = secondRightNote;
-            }
-
-            if(usedRight) {
-                this.prevRightTargetHit = this.rightTargetHit;
-                this.rightTicksFromHit = 0;
-                this.rightTargetHit = rightNote;
-            }
-            if(usedLeft) {
-                this.prevLeftTargetHit = this.leftTargetHit;
-                this.leftTicksFromHit = 0;
-                this.leftTargetHit = leftNote;
-            }
-
-
-            for (MidiStream.MidiTone tone : this.currentlyPlaying.getNotesAt(this.playingTicks)) {
-                this.playSound(tone.getEvent(), (float) Math.pow(2.0D, (tone.getKey() / 12.0D)));
-            }
-
 
             if(this.freind != null) {
                 this.setPosition(this.freind.posX + 0.75, this.freind.posY, this.freind.posZ);
@@ -150,7 +153,6 @@ public class MusicalSkeleton extends EntityCreature {
 
                 this.getLookHelper().setLookPositionWithEntity(this.freind, this.getHorizontalFaceSpeed(), this.getVerticalFaceSpeed());
             }
-
         } else if(this.world.isRemote && this.isKeyboard) {
             this.rotationPitch = 0;
             this.rotationYaw = 0;
@@ -162,18 +164,36 @@ public class MusicalSkeleton extends EntityCreature {
             this.isKeyboard = false;
             this.freind = null;
         }
+
+        if(this.freind == null || (!this.isKeyboard && !this.isPlaying)) {
+            if(this.freind != null) {
+                this.freind.freind = null;
+                this.freind.isKeyboard = false;
+                this.freind.isPlaying = false;
+                this.freind = null;
+            }
+            this.isKeyboard = false;
+            this.isPlaying = false;
+        }
     }
 
     @SideOnly(Side.CLIENT)
-    private void playSound(SoundEvent event, float pitch) {
-        Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(event, SoundCategory.RECORDS, 2F, pitch, this.getPosition()));
+    private void playRawSound(SoundEvent event, float volume, float pitch) {
+        Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(event, SoundCategory.RECORDS, volume, pitch, this.getPosition()));
 
     }
 
     @Override
     protected boolean processInteract(EntityPlayer player, EnumHand hand) {
-        if(this.isPlaying && this.world.isRemote) {
-            this.displayMidiGui();
+        if(this.isPlaying) {
+            if(this.world.isRemote) {
+                if(player.isSneaking()) {
+                    this.paused = !this.paused;
+                } else {
+                    this.displayMidiGui();
+                }
+            }
+            player.swingArm(hand);
             return true;
         } else if(this.isKeyboard) {
             return this.freind.processInteract(player, hand);
