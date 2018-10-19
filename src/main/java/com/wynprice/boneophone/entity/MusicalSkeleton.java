@@ -269,11 +269,6 @@ public class MusicalSkeleton extends EntityCreature {
         }
 
         @Override
-        public boolean isInterruptible() {
-            return !this.playing;
-        }
-
-        @Override
         public void updateTask() {
             this.skeleton.getLookHelper().setLookPositionWithEntity(this.skeleton.freind, 10.0F, (float)this.skeleton.getVerticalFaceSpeed());
             this.skeleton.getNavigator().tryMoveToEntityLiving(this.skeleton.freind, this.moveSpeed);
@@ -294,7 +289,7 @@ public class MusicalSkeleton extends EntityCreature {
 
         @Override
         public boolean shouldContinueExecuting() {
-            return this.skeleton.freind != null && this.skeleton.freind.isEntityAlive() && this.skeleton.freind.freind == this.skeleton;
+            return this.skeleton.freind == null || this.skeleton.freind.isDead || this.skeleton.freind.freind != this.skeleton;
         }
 
         @Override
