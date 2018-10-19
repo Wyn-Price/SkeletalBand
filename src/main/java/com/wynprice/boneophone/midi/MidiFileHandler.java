@@ -46,29 +46,34 @@ public class MidiFileHandler {
 
         long start = System.currentTimeMillis();
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try(DataOutputStream out = new DataOutputStream(new GZIPOutputStream(baos))) {
-            out.writeFloat(stream.midiTicksPerMcTick);
-            out.writeInt(stream.min);
-            out.writeInt(stream.max);
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try(DataOutputStream dos = new DataOutputStream(baos)) {
+               dos.writeFloat(stream.midiTicksPerMcTick);
+               dos.writeInt(stream.min);
+               dos.writeInt(stream.max);
 
-            out.writeInt(stream.data.length);
+               dos.writeInt(stream.data.length);
 
-            for (int i = 0; i < stream.data.length; i++) {
-                MidiStream.MidiTone[] dataum = stream.data[i];
-                if(dataum.length != 0) {
-                    out.writeInt(i);
-                    out.writeInt(dataum.length);
-                    for (MidiStream.MidiTone midiTone : dataum) {
-                        out.writeInt(midiTone.key);
+                for (int i = 0; i < stream.data.length; i++) {
+                    MidiStream.MidiTone[] dataum = stream.data[i];
+                    if(dataum.length != 0) {
+                       dos.writeInt(i);
+                       dos.writeInt(dataum.length);
+                        for (MidiStream.MidiTone midiTone : dataum) {
+                           dos.writeInt(midiTone.key);
+                        }
                     }
                 }
+               dos.writeInt(-1); //-1 to signify the end of the stream
+
+                byte[] raw = baos.toByteArray();
+                ByteArrayOutputStream out = new ByteArrayOutputStream(raw.length);
+                try(GZIPOutputStream gzip = new GZIPOutputStream(out)) {
+                    gzip.write(raw);
+                }
+                SkeletalBand.LOGGER.info("Written midi file, took {}ms", System.currentTimeMillis() - start);
+                return out.toByteArray();
             }
-
-            out.writeInt(-1); //-1 to signify the end of the stream
-
-            SkeletalBand.LOGGER.info("Written midi file, took {}ms", System.currentTimeMillis() - start);
-            return baos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,43 +99,46 @@ public class MidiFileHandler {
         long start = System.currentTimeMillis();
 
         InputStream baisRaw = new ByteArrayInputStream(abyte);
-        try(DataInputStream is = new DataInputStream(new GZIPInputStream(baisRaw))) {
-            Map<Integer, List<MidiStream.MidiTone>> toneMap = Maps.newHashMap();
+        try(GZIPInputStream gzipIn = new GZIPInputStream(baisRaw)) {
+            try(DataInputStream is = new DataInputStream(gzipIn)) {
+                Map<Integer, List<MidiStream.MidiTone>> toneMap = Maps.newHashMap();
 
-            float ratio = is.readFloat();
-            int min = is.readInt();
-            int max = is.readInt();
+                float ratio = is.readFloat();
+                int min = is.readInt();
+                int max = is.readInt();
 
-            int total = is.readInt();
+                int total = is.readInt();
 
-            int next = is.readInt();
+                int next = is.readInt();
 
-            while (next != -1) {
-                int amount = is.readInt();
-                for (int i = 0; i < amount; i++) {
-                    int key = is.readInt();
-                    MidiStream.MidiTone tone = new MidiStream.MidiTone(key);
-                    tone.setPosition((float)(key - min) / (float)(max - min));
-                    toneMap.computeIfAbsent(next, _i -> Lists.newArrayList()).add(tone);
+                while (next != -1) {
+                    int amount = is.readInt();
+                    for (int i = 0; i < amount; i++) {
+                        int key = is.readInt();
+                        MidiStream.MidiTone tone = new MidiStream.MidiTone(key);
+                        tone.setPosition((float)(key - min) / (float)(max - min));
+                        toneMap.computeIfAbsent(next, _i -> Lists.newArrayList()).add(tone);
+                    }
+                    next = is.readInt();
                 }
-                next = is.readInt();
+
+                MidiStream.MidiTone[][] streams = new MidiStream.MidiTone[total][];
+
+                for (int i = 0; i < total; i++) {
+                    streams[i] = new MidiStream.MidiTone[0];
+                }
+
+                for (Map.Entry<Integer, List<MidiStream.MidiTone>> entry : toneMap.entrySet()) {
+                    streams[entry.getKey()] = entry.getValue().toArray(new MidiStream.MidiTone[0]);
+                }
+
+                SkeletalBand.LOGGER.info("Read midi file, took {}ms", System.currentTimeMillis() - start);
+
+                return new MidiStream(streams, ratio, min, max);
             }
 
-            MidiStream.MidiTone[][] streams = new MidiStream.MidiTone[total][];
 
-            for (int i = 0; i < total; i++) {
-                streams[i] = new MidiStream.MidiTone[0];
-            }
-
-            for (Map.Entry<Integer, List<MidiStream.MidiTone>> entry : toneMap.entrySet()) {
-                streams[entry.getKey()] = entry.getValue().toArray(new MidiStream.MidiTone[0]);
-            }
-
-            SkeletalBand.LOGGER.info("Read midi file, took {}ms", System.currentTimeMillis() - start);
-
-            return new MidiStream(streams, ratio, min, max);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         throw new RuntimeException("Error reading midi file from byte array");
