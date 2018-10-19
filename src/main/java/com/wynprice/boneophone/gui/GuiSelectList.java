@@ -58,7 +58,7 @@ public class GuiSelectList {
 
         if(entries.size() > this.cellMax) {
             int ySize = (entries.size() - this.cellMax) * this.cellHeight;
-            scrollLength = MathHelper.clamp(totalHeight * totalHeight / ySize, 32, totalHeight - 8);
+            scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
             scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
             if (scrollYStart < this.yPos) {
                 scrollYStart = this.yPos;
@@ -113,9 +113,9 @@ public class GuiSelectList {
 
         if(this.open) {
             for (int i = 0; i < entries.size(); i++) {
-                int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight);
+                int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight) - 1;
                 //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
-                if(yStart + 5 >= this.xPos && yStart - 5 <= this.xPos + height) {
+                if(yStart >= this.yPos && yStart <= this.yPos + height) {
                     Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, insideSelectionColor);
                     Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, borderColor);
                     entries.get(i).draw(this.xPos, yStart);
@@ -129,7 +129,7 @@ public class GuiSelectList {
             if(relX <= this.width){
                 if (relY <= this.cellHeight) {
                     Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, highlightColor);
-                } else if(this.open) {
+                } else if(relY < height && this.open) {
                     if(entries.size() > this.cellMax && mouseX >= scrollBarLeft && mouseX <= scrollBarLeft + scrollBarWidth && mouseY >= scrollYStart && mouseY <= scrollYStart + scrollLength) {
                         highlighedScrollbar = true;
                     } else if(this.lastYClicked == -1) {
@@ -177,6 +177,7 @@ public class GuiSelectList {
 
         Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + borderSize, borderColor);
         Gui.drawRect(this.xPos, this.yPos + height, this.xPos + this.width, this.yPos + height - borderSize, borderColor);
+        Gui.drawRect(this.xPos, this.yPos + cellHeight, this.xPos + this.width, this.yPos + cellHeight - borderSize, borderColor);
         Gui.drawRect(this.xPos, this.yPos, this.xPos + borderSize, this.yPos + height, borderColor);
         Gui.drawRect(this.xPos + this.width, this.yPos, this.xPos + this.width - borderSize, this.yPos + height, borderColor);
         GlStateManager.enableDepth();
@@ -215,7 +216,7 @@ public class GuiSelectList {
                     if(relY <= this.cellHeight) {
                         this.open = !this.open;
                         return;
-                    } else if(this.open){
+                    } else if(relY < height && this.open){
                         for (int i = 0; i < entries.size(); i++) {
                             if(relY <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
                                 entries.get(i).onClicked(relX, relY);
