@@ -62,8 +62,8 @@ public class GuiSelectMidis extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
-        this.midiSelect.render(mouseX, mouseY);
         this.drawCenteredString(mc.fontRenderer, this.error, this.width / 2, this.height / 4 + 40, 0xFFFF5555);
+        this.midiSelect.render(mouseX, mouseY);
     }
 
     @Override
