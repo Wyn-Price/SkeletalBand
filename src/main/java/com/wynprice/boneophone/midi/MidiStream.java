@@ -86,7 +86,10 @@ public class MidiStream {
                         ShortMessage sm = (ShortMessage) message;
                         if(sm.getCommand() == 0x90) { //ON
                             if(!foundTempo) {
-                                throw new IllegalArgumentException("Track started before tempo was established");
+                                //110 seems to be the default value if no bpm is set. Substituting that in with the same
+                                //Comments applying from before
+                                this.midiTicksPerMcTick = (110 * sequence.getResolution()) / 1200F;
+                                foundTempo = true;
                             }
                             map.computeIfAbsent(event.getTick(), l -> Lists.newArrayList()).add(new MidiTone(sm.getData1()));
                             this.min = Math.min(this.min, sm.getData1());
