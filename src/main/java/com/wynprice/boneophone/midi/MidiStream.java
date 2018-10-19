@@ -103,7 +103,7 @@ public class MidiStream {
             MidiTone[] ain = new MidiTone[lis.size()];
             for (int i = 0; i < lis.size(); i++) {
                 MidiTone tone = lis.get(i);
-                tone.setPosition((float)(tone.key - this.min) / (float)(this.max - this.min));
+                tone.setPosition((float)(tone.getRawKey() - this.min) / (float)(this.max - this.min));
                 ain[i] = tone;
             }
             this.data[t++] = ain;
@@ -143,6 +143,10 @@ public class MidiStream {
 
         public int getKey() {
             return this.key % 12;
+        }
+
+        public int getRawKey() {
+            return this.key;
         }
 
         public void setPosition(float position) {
