@@ -2,6 +2,7 @@ package com.wynprice.boneophone.midi;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.SoundHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -48,19 +49,24 @@ public class MidiStream {
         try {
             Sequence sequence = MidiSystem.getSequence(this.streamSupplier.getWithException());
             float div = sequence.getDivisionType();
+            boolean foundTempo = false;
+
             if(div != Sequence.PPQ) {
-                throw new UnsupportedOperationException("Don't know yet how to handle SMPTE timecodes. Try reformatting the midi");
+                this.midiTicksPerMcTick = sequence.getResolution() * (sequence.getDivisionType() / 20F); //20 ticks per second
+                foundTempo = true;
             }
             for (long i = 0; i < sequence.getTickLength(); i++) {
                 map.put(i, Lists.newArrayList());
             }
-            boolean foundTempo = false;
             for (Track track : sequence.getTracks()) {
                 for (int i = 0; i < track.size(); i++) {
                     MidiEvent event = track.get(i);
                     MidiMessage message = event.getMessage();
                     if(message instanceof MetaMessage) {
                         MetaMessage mm = (MetaMessage) message;
+//                        if(mm.getType() == 0x01) { //Text event
+//
+//                        } else
                         if(mm.getType() == 0x51 && !foundTempo) { //Set Tempo
 
                             //Tempo is stored as a 3-byte big-endian integer
@@ -77,13 +83,12 @@ public class MidiStream {
                             foundTempo = true;
                         }
                     } else if(message instanceof ShortMessage) {
-                        if(!foundTempo) {
-                            throw new IllegalArgumentException("Track started before tempo was established");
-
-                        }
                         ShortMessage sm = (ShortMessage) message;
                         if(sm.getCommand() == 0x90) { //ON
-                            map.get(event.getTick()).add(new MidiTone(sm.getData1()));
+                            if(!foundTempo) {
+                                throw new IllegalArgumentException("Track started before tempo was established");
+                            }
+                            map.computeIfAbsent(event.getTick(), l -> Lists.newArrayList()).add(new MidiTone(sm.getData1()));
                             this.min = Math.min(this.min, sm.getData1());
                             this.max = Math.max(this.max, sm.getData1());
                         }
@@ -91,7 +96,7 @@ public class MidiStream {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         if(this.midiTicksPerMcTick == -1) {
             throw new IllegalArgumentException("Error loading. Unable to determine tick ratio: " + this.midiTicksPerMcTick);
