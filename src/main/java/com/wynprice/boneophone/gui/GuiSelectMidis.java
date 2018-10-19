@@ -1,10 +1,8 @@
 package com.wynprice.boneophone.gui;
 
 import com.google.common.collect.Lists;
-import com.sun.javafx.util.Utils;
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.midi.MidiFileHandler;
-import com.wynprice.boneophone.network.C1UploadMidiFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -15,6 +13,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
+import org.apache.logging.log4j.core.util.FileUtils;
 import org.lwjgl.opengl.GL11;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -153,6 +152,8 @@ public class GuiSelectMidis extends GuiScreen {
         return new double[]{r, g, b};
     }
 
+    private final static List<String> ACCEPTED_FILE_NAMES = Lists.newArrayList("midi", "mid");
+
    class MidiEntry implements GuiSelectList.SelectListEntry {
 
         private final File file;
@@ -166,11 +167,13 @@ public class GuiSelectMidis extends GuiScreen {
         @Override
         public void draw(int x, int y) {
             String fileName = this.file.getPath().substring("midis/".length());
-            if(fileName.endsWith(".mid")) {
-                fileName = fileName.substring(0, fileName.length() - ".mid".length());
-            } else if(fileName.endsWith(".midi")) {
-                fileName = fileName.substring(0, fileName.length() - ".midi".length());
+            if(this.file.getName().lastIndexOf(".") != 0) {
+                String ext = FileUtils.getFileExtension(this.file);
+                if(ACCEPTED_FILE_NAMES.contains(ext)) {
+                    fileName = fileName.substring(0, fileName.length() - ext.length() - 1);
+                }
             }
+
 
             mc.fontRenderer.drawString(fileName, x + 21, y + 6, -1);
 
