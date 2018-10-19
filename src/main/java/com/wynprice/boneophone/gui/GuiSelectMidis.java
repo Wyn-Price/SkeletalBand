@@ -17,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 import org.lwjgl.opengl.GL11;
 
+import javax.sound.midi.InvalidMidiDataException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -31,6 +32,8 @@ public class GuiSelectMidis extends GuiScreen {
     private GuiSelectList midiSelect;
 
     private GuiButton playButton;
+
+    private String error = "";
 
     public GuiSelectMidis(int entityID) {
         this.entityID = entityID;
@@ -61,6 +64,7 @@ public class GuiSelectMidis extends GuiScreen {
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.midiSelect.render(mouseX, mouseY);
+        this.drawCenteredString(mc.fontRenderer, this.error, this.width / 2, this.height / 4 + 40, 0xFFFF5555);
     }
 
     @Override
@@ -79,8 +83,20 @@ public class GuiSelectMidis extends GuiScreen {
     protected void actionPerformed(GuiButton button) throws IOException {
         super.actionPerformed(button);
         if(button.id == 0 && this.midiSelect.getActive() instanceof MidiEntry) {
-            SkeletalBand.NETWORK.sendToServer(new C1UploadMidiFile(this.entityID, ((MidiEntry)this.midiSelect.getActive()).file));
-            Minecraft.getMinecraft().displayGuiScreen(null);
+            this.error = "";
+            try {
+                MidiSplitNetworkHandler.sendMidiData(this.entityID, MidiFileHandler.writeMidiFile(((MidiEntry)this.midiSelect.getActive()).file));
+            } catch (Exception e) {
+                if(e.getCause() != null && e.getCause() instanceof InvalidMidiDataException) {
+                    this.error = "Invalid file: " + e.getCause().getMessage(); //Localize
+                } else {
+                    this.error = e.getLocalizedMessage();
+                }
+                SkeletalBand.LOGGER.error("Error reading midi file", e);
+            }
+            if(this.error.isEmpty()) {
+                Minecraft.getMinecraft().displayGuiScreen(null);
+            }
         } else if(button.id == 1) {
             OpenGlHelper.openFile(MidiFileHandler.folder);
         }
