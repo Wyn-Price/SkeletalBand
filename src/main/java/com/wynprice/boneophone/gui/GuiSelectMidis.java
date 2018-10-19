@@ -149,7 +149,14 @@ public class GuiSelectMidis extends GuiScreen {
 
         @Override
         public void draw(int x, int y) {
-            mc.fontRenderer.drawString(this.file.getPath().substring(6), x + 21, y + 6, -1);
+            String fileName = this.file.getPath().substring("midis/".length());
+            if(fileName.endsWith(".mid")) {
+                fileName = fileName.substring(0, fileName.length() - ".mid".length());
+            } else if(fileName.endsWith(".midi")) {
+                fileName = fileName.substring(0, fileName.length() - ".midi".length());
+            }
+
+            mc.fontRenderer.drawString(fileName, x + 21, y + 6, -1);
 
             BufferBuilder buff = Tessellator.getInstance().getBuffer();
 
