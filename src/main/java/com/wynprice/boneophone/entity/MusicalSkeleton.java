@@ -263,8 +263,6 @@ public class MusicalSkeleton extends EntityCreature {
 
         private final MusicalSkeleton skeleton = MusicalSkeleton.this;
 
-        private boolean playing;
-
         private AiFindFreind(double moveSpeed) {
             this.moveSpeed = moveSpeed;
         }
@@ -290,12 +288,21 @@ public class MusicalSkeleton extends EntityCreature {
 
         @Override
         public void updateTask() {
+            if(this.skeleton.freind == null) {
+                for (MusicalSkeleton skeleton : this.skeleton.world.getEntitiesWithinAABB(MusicalSkeleton.class, new AxisAlignedBB(-40, -20, -40, 40, 20, 40).offset(this.skeleton.getPositionVector()), e -> e != this.skeleton)) {
+                    if(skeleton.freind == null && !skeleton.isPlaying && !skeleton.isKeyboard) {
+                        this.skeleton.freind = skeleton;
+                        skeleton.freind = this.skeleton;
+                    }
+                }
+            }
+            if(this.skeleton.freind == null) {
+                return;
+            }
             this.skeleton.getLookHelper().setLookPositionWithEntity(this.skeleton.freind, 10.0F, (float)this.skeleton.getVerticalFaceSpeed());
             this.skeleton.getNavigator().tryMoveToEntityLiving(this.skeleton.freind, this.moveSpeed);
 
             if(this.skeleton.getDistanceSq(this.skeleton.freind) < 4.0D && !this.skeleton.freind.isPlaying && !this.skeleton.freind.isKeyboard) {
-                this.playing = true;
-
                 SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.skeleton.getEntityId(), this.skeleton.freind.getEntityId(), true, false));
                 SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.skeleton.freind.getEntityId(), this.skeleton.getEntityId(), false, true));
 
