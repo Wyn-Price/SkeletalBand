@@ -18,12 +18,11 @@ public class C1UploadMidiFile implements IMessage {
 
     private int entityID;
 
-    private File midiFileIn;
     private byte[] abyte;
 
-    public C1UploadMidiFile(int entityID, File midiFile) {
+    public C1UploadMidiFile(int entityID, byte[] abyte) {
         this.entityID = entityID;
-        this.midiFileIn = midiFile;
+        this.abyte = abyte;
     }
 
     @Override
@@ -35,7 +34,7 @@ public class C1UploadMidiFile implements IMessage {
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityID);
-        MidiFileHandler.writeBytes(MidiFileHandler.writeMidiFile(this.midiFileIn), buf);
+        MidiFileHandler.writeBytes(this.abyte, buf);
     }
 
     public static class Handler extends WorldModificationsMessageHandler<C1UploadMidiFile, IMessage> {

@@ -10,6 +10,7 @@ import com.wynprice.boneophone.entity.ThrowableNoteRenderer;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.C1UploadMidiFile;
+import com.wynprice.boneophone.network.C3SplitUploadMidiFile;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
 import com.wynprice.boneophone.network.S2SyncAndPlayMidi;
 import net.minecraft.client.Minecraft;
@@ -78,6 +79,7 @@ public class SkeletalBand {
         NETWORK.registerMessage(new S0MusicalSkeletonStateUpdate.Handler(), S0MusicalSkeletonStateUpdate.class, 0, Side.CLIENT);
         NETWORK.registerMessage(new C1UploadMidiFile.Handler(), C1UploadMidiFile.class, 1, Side.SERVER);
         NETWORK.registerMessage(new S2SyncAndPlayMidi.Handler(), S2SyncAndPlayMidi.class, 2, Side.CLIENT);
+        NETWORK.registerMessage(new C3SplitUploadMidiFile.Handler(), C3SplitUploadMidiFile.class, 3, Side.SERVER);
     }
 
     @EventHandler
