@@ -79,6 +79,12 @@ public class GuiSelectMidis extends GuiScreen {
     }
 
     @Override
+    public void handleKeyboardInput() throws IOException {
+        super.handleKeyboardInput();
+        this.midiSelect.handleKeyboardInput();
+    }
+
+    @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         super.actionPerformed(button);
         if(button.id == 0 && this.midiSelect.getActive() instanceof MidiEntry) {
@@ -157,15 +163,13 @@ public class GuiSelectMidis extends GuiScreen {
    class MidiEntry implements GuiSelectList.SelectListEntry {
 
         private final File file;
+        private final String displayName;
         private final double[] rgb;
 
         MidiEntry(File file, double[] rgb) {
             this.file = file;
             this.rgb = rgb;
-        }
 
-        @Override
-        public void draw(int x, int y) {
             String fileName = this.file.getPath().substring("midis/".length());
             if(this.file.getName().lastIndexOf(".") != 0) {
                 String ext = FileUtils.getFileExtension(this.file);
@@ -173,9 +177,13 @@ public class GuiSelectMidis extends GuiScreen {
                     fileName = fileName.substring(0, fileName.length() - ext.length() - 1);
                 }
             }
+            this.displayName = fileName;
 
+        }
 
-            mc.fontRenderer.drawString(fileName, x + 21, y + 6, -1);
+        @Override
+        public void draw(int x, int y) {
+            mc.fontRenderer.drawString(this.displayName, x + 21, y + 6, -1);
 
             BufferBuilder buff = Tessellator.getInstance().getBuffer();
 
@@ -192,5 +200,10 @@ public class GuiSelectMidis extends GuiScreen {
 
             Tessellator.getInstance().draw();
         }
-    }
+
+       @Override
+       public String getSearch() {
+           return this.displayName;
+       }
+   }
 }

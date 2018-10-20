@@ -1,11 +1,14 @@
 package com.wynprice.boneophone.gui;
 
+import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.math.MathHelper;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -30,13 +33,15 @@ public class GuiSelectList {
     private boolean open;
     private float scroll;
 
+    private String search = "";
+
     private SelectListEntry active;
 
-    private final Supplier<List<SelectListEntry>> listSupplier;
+    private final Supplier<List<? extends SelectListEntry>> listSupplier;
 
     private int lastYClicked = -1;
 
-    public GuiSelectList(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<SelectListEntry>> listSupplier) {
+    public GuiSelectList(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<? extends SelectListEntry>> listSupplier) {
         this.xPos = xPos;
         this.yPos = yPos;
         this.width = width;
@@ -46,7 +51,7 @@ public class GuiSelectList {
     }
 
     public void render(int mouseX, int mouseY) {
-        List<SelectListEntry> entries = this.listSupplier.get();
+        List<? extends SelectListEntry> entries = this.getSearchedList();
 
         int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
         int totalHeight = height - this.cellHeight;
@@ -171,7 +176,9 @@ public class GuiSelectList {
         Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, insideColor);
 
 
-        if(this.active != null) {
+        if(!this.search.isEmpty()) {
+          mc.fontRenderer.drawString(this.search, this.xPos + 5, this.yPos + this.cellHeight / 2 - mc.fontRenderer.FONT_HEIGHT / 2, -1);
+        } else if(this.active != null) {
             this.active.draw(this.xPos, this.yPos);
         }
 
@@ -185,7 +192,7 @@ public class GuiSelectList {
 
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if(mouseButton == 0) {
-            List<SelectListEntry> entries = this.listSupplier.get();
+            List<? extends SelectListEntry> entries = this.getSearchedList();
 
             int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
             int totalHeight = height - this.cellHeight;
@@ -229,12 +236,28 @@ public class GuiSelectList {
             }
         }
         this.open = false;
+        this.search = "";
     }
 
     public void handleMouseInput() {
         int mouseInput = Mouse.getEventDWheel();
         if(mouseInput != 0) {
             this.scroll((mouseInput < 0 ? -1 : 1) * SCROLL_AMOUNT);
+        }
+    }
+
+    public void handleKeyboardInput() {
+        char c = Keyboard.getEventCharacter();
+        if (Keyboard.getEventKey() == 0 && c >= ' ' || Keyboard.getEventKeyState()) {
+            if(Keyboard.getEventKey() == Keyboard.KEY_BACK) {
+                if(!this.search.isEmpty()) {
+                    this.search = this.search.substring(0, this.search.length() - 1);
+                }
+            } else if(ChatAllowedCharacters.isAllowedCharacter(c)) {
+                this.search += Character.toLowerCase(c);
+                this.open = true;
+                this.scroll = 0;
+            }
         }
     }
 
@@ -246,16 +269,29 @@ public class GuiSelectList {
                 if(relY <= this.cellHeight) {
                     return true;
                 } else if(this.open){
-                    return relY <= this.cellHeight * (Math.min(this.listSupplier.get().size(), this.cellMax) + 1);
+                    return relY <= this.cellHeight * (Math.min(this.getSearchedList().size(), this.cellMax) + 1);
                 }
             }
         }
         return false;
     }
 
+    private List<? extends SelectListEntry> getSearchedList() {
+        if(this.search.isEmpty()) {
+            return this.listSupplier.get();
+        }
+        List<SelectListEntry> list = Lists.newArrayList();
+        for (SelectListEntry listEntry : this.listSupplier.get()) {
+            if(listEntry.getSearch().toLowerCase().contains(this.search)) {
+                list.add(listEntry);
+            }
+         }
+         return list;
+    }
+
     public void scroll(float amount) {
         this.scroll -= amount;
-        this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.listSupplier.get().size() -  this.cellMax, 0));
+        this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.getSearchedList().size() -  this.cellMax, 0));
     }
 
     public SelectListEntry getActive() {
@@ -264,6 +300,8 @@ public class GuiSelectList {
 
     interface SelectListEntry {
         void draw(int x, int y);
+
+        String getSearch();
 
         default void onClicked(int relMouseX, int relMouseY) {
 
