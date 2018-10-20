@@ -6,6 +6,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.AbstractSkeleton;
+import net.minecraft.entity.monster.EntityStray;
+import net.minecraft.entity.monster.EntityWitherSkeleton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.SoundEvents;
@@ -73,6 +75,13 @@ public class ThrowableNoteEntity extends EntityThrowable implements IEntityAddit
             for (AbstractSkeleton skeleton : world.getEntitiesWithinAABB(AbstractSkeleton.class, new AxisAlignedBB(result.hitVec.x, result.hitVec.y, result.hitVec.z, result.hitVec.x, result.hitVec.y, result.hitVec.z).grow(3D))) {
                 skeleton.setDead();
                 MusicalSkeleton mus = new MusicalSkeleton(world);
+                if(skeleton instanceof EntityWitherSkeleton) {
+                    mus.type = MusicalSkeleton.SkeletonType.WITHER;
+                } else if(skeleton instanceof EntityStray) {
+                    mus.type = MusicalSkeleton.SkeletonType.STRAY;
+                } else {
+                    mus.type = MusicalSkeleton.SkeletonType.NORMAL;
+                }
                 mus.setPositionAndRotation(skeleton.posX, skeleton.posY, skeleton.posZ, skeleton.rotationYaw, skeleton.rotationPitch);
                 mus.onInitialSpawn(world.getDifficultyForLocation(skeleton.getPosition()), null);
                 world.spawnEntity(mus);

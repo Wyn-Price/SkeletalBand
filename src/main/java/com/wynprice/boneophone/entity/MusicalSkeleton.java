@@ -4,6 +4,7 @@ import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.gui.GuiSelectMidis;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.Entity;
@@ -12,21 +13,24 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 
-public class MusicalSkeleton extends EntityCreature {
+public class MusicalSkeleton extends EntityCreature implements IEntityAdditionalSpawnData {
 
     public static int ticksToHit = 3;
 
@@ -47,6 +51,8 @@ public class MusicalSkeleton extends EntityCreature {
     public int leftTicksFromHit;
 
     public float rx, ry, lx, ly;
+
+    public SkeletonType type = SkeletonType.NORMAL;
 
     public MidiStream currentlyPlaying = SkeletalBand.SPOOKY;
     public int playingTicks = 0;
@@ -190,7 +196,18 @@ public class MusicalSkeleton extends EntityCreature {
     @SideOnly(Side.CLIENT)
     private void playRawSound(SoundEvent event, float volume, float pitch) {
         Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(event, SoundCategory.RECORDS, volume, pitch, this.getPosition()));
+    }
 
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound.setInteger("SkeletonType", this.type.ordinal());
+        return super.writeToNBT(compound);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        this.type = SkeletonType.values()[compound.getInteger("SkeletonType") % SkeletonType.values().length];
+        super.readFromNBT(compound);
     }
 
     @Override
@@ -211,6 +228,13 @@ public class MusicalSkeleton extends EntityCreature {
         return false;
     }
 
+    @Override
+    protected void collideWithEntity(Entity entityIn) {
+        if(entityIn != this.freind) {
+            super.collideWithEntity(entityIn);
+        }
+    }
+
     @SideOnly(Side.CLIENT)
     private void displayMidiGui() {
         Minecraft.getMinecraft().displayGuiScreen(new GuiSelectMidis(this.getEntityId()));
@@ -229,6 +253,16 @@ public class MusicalSkeleton extends EntityCreature {
         this.setItemStackToSlot(EntityEquipmentSlot.OFFHAND, new ItemStack(Items.BONE));
 
         return data;
+    }
+
+    @Override
+    public void writeSpawnData(ByteBuf buffer) {
+        buffer.writeInt(this.type.ordinal());
+    }
+
+    @Override
+    public void readSpawnData(ByteBuf additionalData) {
+        this.type = SkeletonType.values()[additionalData.readInt()];
     }
 
     private class AiWander extends EntityAIWanderAvoidWater {
@@ -328,5 +362,9 @@ public class MusicalSkeleton extends EntityCreature {
         public boolean shouldContinueExecuting() {
             return this.skeleton.freind == null || this.skeleton.freind.isDead || this.skeleton.freind.freind != this.skeleton;
         }
+    }
+
+    public enum SkeletonType {
+        NORMAL, WITHER, STRAY;
     }
 }
