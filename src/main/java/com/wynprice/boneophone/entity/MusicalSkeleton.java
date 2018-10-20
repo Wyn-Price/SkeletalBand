@@ -83,6 +83,19 @@ public class MusicalSkeleton extends EntityCreature {
             this.setSize(0.6F, 1.8F);
         }
 
+        if(this.isPlaying) {
+            if(this.freind != null) {
+                this.setPosition(this.freind.posX + 0.75, this.freind.posY, this.freind.posZ);
+
+                this.rotationYaw = 90;
+                this.rotationYawHead = 90;
+                this.prevRotationYawHead = 90;
+                this.rotationPitch = 0;
+
+                this.getLookHelper().setLookPositionWithEntity(this.freind, this.getHorizontalFaceSpeed(), this.getVerticalFaceSpeed());
+            }
+        }
+
         if(this.world.isRemote && this.isPlaying) {
             if(!this.paused) {
                 boolean usedLeft = false;
@@ -147,17 +160,6 @@ public class MusicalSkeleton extends EntityCreature {
                 }
 
                 this.playingTicks++;
-            }
-
-            if(this.freind != null) {
-                this.setPosition(this.freind.posX + 0.75, this.freind.posY, this.freind.posZ);
-
-                this.rotationYaw = 90;
-                this.rotationYawHead = 90;
-                this.prevRotationYawHead = 90;
-                this.rotationPitch = 0;
-
-                this.getLookHelper().setLookPositionWithEntity(this.freind, this.getHorizontalFaceSpeed(), this.getVerticalFaceSpeed());
             }
         } else if(this.world.isRemote && this.isKeyboard) {
             this.rotationPitch = 0;
