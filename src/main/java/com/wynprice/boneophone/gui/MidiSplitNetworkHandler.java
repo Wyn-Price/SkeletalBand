@@ -11,12 +11,13 @@ public class MidiSplitNetworkHandler {
         if(len < 30000) {
             SkeletalBand.NETWORK.sendToServer(new C1UploadMidiFile(entityID, data));
         } else {
-            int total = len / 30000;
+            int total = len / 30000 + 1;
             int collectionID = C3SplitUploadMidiFile.getNextAvalibleId();
-            for (int i = 0; i <= total; i++) {
-                byte[] outData = new byte[i == total ? len % 30000 : 30000];
+            SkeletalBand.LOGGER.info("Splitting up packet of {} bytes into {} packets", len, total);
+            for (int i = 0; i < total; i++) {
+                byte[] outData = new byte[i == total - 1 ? len % 30000 : 30000];
                 System.arraycopy(data, 30000 * i, outData, 0, outData.length);
-                SkeletalBand.NETWORK.sendToServer(new C3SplitUploadMidiFile(entityID, collectionID, i, total + 1, outData));
+                SkeletalBand.NETWORK.sendToServer(new C3SplitUploadMidiFile(entityID, collectionID, i, total, outData));
 
             }
         }
