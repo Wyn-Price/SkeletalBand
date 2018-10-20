@@ -176,8 +176,10 @@ public class MusicalSkeleton extends EntityCreature {
                 this.freind.freind = null;
                 this.freind.isKeyboard = false;
                 this.freind.isPlaying = false;
+                this.freind.paused = false;
                 this.freind = null;
             }
+            this.paused = false;
             this.isKeyboard = false;
             this.isPlaying = false;
         }
