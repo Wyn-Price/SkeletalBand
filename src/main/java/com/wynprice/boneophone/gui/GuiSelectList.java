@@ -58,7 +58,7 @@ public class GuiSelectList {
 
         float scrollLength = -1;
         float scrollYStart = -1;
-        int scrollBarWidth = 6;
+        int scrollBarWidth = 8;
         int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
 
         if(entries.size() > this.cellMax) {
@@ -199,7 +199,7 @@ public class GuiSelectList {
 
             float scrollLength = -1;
             float scrollYStart = -1;
-            int scrollBarWidth = 6;
+            int scrollBarWidth = 8;
             int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
 
             if(entries.size() > this.cellMax) {
