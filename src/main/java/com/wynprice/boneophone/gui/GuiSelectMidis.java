@@ -131,10 +131,8 @@ public class GuiSelectMidis extends GuiScreen {
     @Override
     public void handleKeyboardInput() throws IOException {
         super.handleKeyboardInput();
-        if(!this.channelField.isFocused()) {
-            this.musicianTypes.handleKeyboardInput();
-            this.midiSelect.handleKeyboardInput();
-        }
+        this.musicianTypes.handleKeyboardInput();
+        this.midiSelect.handleKeyboardInput();
     }
 
     @Override

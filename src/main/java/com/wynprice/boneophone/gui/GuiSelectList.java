@@ -247,6 +247,9 @@ public class GuiSelectList {
     }
 
     public void handleKeyboardInput() {
+        if(!this.open) {
+            return;
+        }
         char c = Keyboard.getEventCharacter();
         if (Keyboard.getEventKey() == 0 && c >= ' ' || Keyboard.getEventKeyState()) {
             if(Keyboard.getEventKey() == Keyboard.KEY_BACK) {
@@ -255,7 +258,6 @@ public class GuiSelectList {
                 }
             } else if(ChatAllowedCharacters.isAllowedCharacter(c)) {
                 this.search += Character.toLowerCase(c);
-                this.open = true;
                 this.scroll = 0;
             }
         }

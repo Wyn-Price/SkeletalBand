@@ -92,9 +92,7 @@ public class GuiMusician extends GuiScreen {
     @Override
     public void handleKeyboardInput() throws IOException {
         super.handleKeyboardInput();
-        if(!this.channelField.isFocused()) {
-            this.musicianTypes.handleKeyboardInput();
-        }
+        this.musicianTypes.handleKeyboardInput();
     }
 
     @Override
