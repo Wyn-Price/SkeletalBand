@@ -3,9 +3,14 @@ package com.wynprice.boneophone.gui;
 import com.google.common.collect.Lists;
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.midi.MidiFileHandler;
+import com.wynprice.boneophone.network.C4SkeletonChangeType;
+import com.wynprice.boneophone.network.C6SkeletonChangeChannel;
+import com.wynprice.boneophone.types.MusicianTypeFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -13,6 +18,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.FileUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -20,22 +26,31 @@ import javax.sound.midi.InvalidMidiDataException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 public class GuiSelectMidis extends GuiScreen {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     private final int entityID;
+    private final Supplier<MusicianTypeFactory> typeGetter;
+    private final IntSupplier channelSupplier;
 
     private GuiSelectList midiSelect;
+    private GuiTextField channelField;
+    private GuiSelectList musicianTypes;
 
     private GuiButton playButton;
 
     private String error = "";
 
-    public GuiSelectMidis(int entityID) {
+    public GuiSelectMidis(int entityID, Supplier<MusicianTypeFactory> typeGetter, IntSupplier channelSupplier) {
         this.entityID = entityID;
+        this.typeGetter = typeGetter;
+        this.channelSupplier = channelSupplier;
     }
 
     @Override
@@ -48,6 +63,36 @@ public class GuiSelectMidis extends GuiScreen {
 
         this.playButton = this.addButton(new GuiButtonExt(0, 7, this.height - 25, this.width / 2 - 10, 20, I18n.format(SkeletalBand.MODID + ".uploadplay")));
         this.addButton(new GuiButtonExt(1, this.width / 2 + 3, this.height - 25, this.width / 2 - 10, 20, I18n.format(SkeletalBand.MODID + ".openmidifolder")));
+
+        List<MusicianTypeEntry> mucicianList = Lists.newArrayList();
+        MusicianTypeFactory activeType = this.typeGetter.get();
+        MusicianTypeEntry active = null;
+        for (MusicianTypeFactory type : SkeletalBand.MUSICIAN_REGISTRY) {
+            mucicianList.add(type == activeType ? active = new MusicianTypeEntry(type) : new MusicianTypeEntry(type));
+        }
+
+        this.musicianTypes = new GuiSelectList(20, 20, this.width / 2 - 30, 20, 5, () -> mucicianList);
+        this.musicianTypes.setActive(active);
+
+        this.channelField = new GuiTextField(1, mc.fontRenderer, this.width / 2 + 10, 5, this.width / 2 - 30, 18);
+        this.channelField.setValidator(s -> (s != null && s.isEmpty()) || StringUtils.isNumeric(s));
+        this.channelField.setText(String.valueOf(this.channelSupplier.getAsInt()));
+        this.channelField.setGuiResponder(new GuiPageButtonList.GuiResponder() {
+            @Override
+            public void setEntryValue(int id, boolean value) {
+            }
+
+            @Override
+            public void setEntryValue(int id, float value) {
+            }
+
+            @Override
+            public void setEntryValue(int id, String value) {
+                if(!value.isEmpty()) {
+                    SkeletalBand.NETWORK.sendToServer(new C6SkeletonChangeChannel(GuiSelectMidis.this.entityID, Integer.valueOf(value)));
+                }
+            }
+        });
 
         super.initGui();
     }
@@ -64,24 +109,38 @@ public class GuiSelectMidis extends GuiScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.drawCenteredString(mc.fontRenderer, this.error, this.width / 2, this.height / 4 + 40, 0xFFFF5555);
         this.midiSelect.render(mouseX, mouseY);
+        this.musicianTypes.render(mouseX, mouseY);
+        this.channelField.drawTextBox();
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         this.midiSelect.mouseClicked(mouseX, mouseY, mouseButton);
+        this.musicianTypes.mouseClicked(mouseX, mouseY, mouseButton);
+        this.channelField.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
+        this.musicianTypes.handleMouseInput();
         this.midiSelect.handleMouseInput();
     }
 
     @Override
     public void handleKeyboardInput() throws IOException {
         super.handleKeyboardInput();
-        this.midiSelect.handleKeyboardInput();
+        if(!this.channelField.isFocused()) {
+            this.musicianTypes.handleKeyboardInput();
+            this.midiSelect.handleKeyboardInput();
+        }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        super.keyTyped(typedChar, keyCode);
+        this.channelField.textboxKeyTyped(typedChar, keyCode);
     }
 
     @Override
@@ -95,7 +154,7 @@ public class GuiSelectMidis extends GuiScreen {
                 if(e.getCause() != null && e.getCause() instanceof InvalidMidiDataException) {
                     this.error = "Invalid file: " + e.getCause().getMessage(); //Localize
                 } else {
-                    this.error = e.getLocalizedMessage();
+                    this.error = e.getClass().getSimpleName() + ": " + e.getLocalizedMessage();
                 }
                 SkeletalBand.LOGGER.error("Error reading midi file", e);
             }
@@ -206,4 +265,30 @@ public class GuiSelectMidis extends GuiScreen {
            return this.displayName;
        }
    }
+
+    private class MusicianTypeEntry implements GuiSelectList.SelectListEntry {
+
+        private final MusicianTypeFactory entry;
+
+        private MusicianTypeEntry(MusicianTypeFactory entry) {
+            this.entry = entry;
+        }
+
+        @Override
+        public void draw(int x, int y) {
+            mc.fontRenderer.drawString(this.getSearch(), x + 21, y + 6, -1);
+        }
+
+        @Override
+        public String getSearch() {
+            return Objects.requireNonNull(entry.getRegistryName()).toString();
+        }
+
+        @Override
+        public void onClicked(int relMouseX, int relMouseY) {
+            SkeletalBand.NETWORK.sendToServer(new C4SkeletonChangeType(GuiSelectMidis.this.entityID, this.entry));
+        }
+    }
+
+
 }

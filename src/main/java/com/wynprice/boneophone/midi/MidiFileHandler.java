@@ -56,7 +56,7 @@ public class MidiFileHandler {
 
             for (int i = 0; i < stream.data.length; i++) {
                 MidiStream.MidiTone[] dataum = stream.data[i];
-                if(dataum.length != 0) {
+                if(dataum != null && dataum.length != 0) {
                     dos.writeInt(i);
                     dos.writeInt(dataum.length);
                     for (MidiStream.MidiTone midiTone : dataum) {
@@ -118,10 +118,6 @@ public class MidiFileHandler {
                 }
 
                 MidiStream.MidiTone[][] streams = new MidiStream.MidiTone[total][];
-
-                for (int i = 0; i < total; i++) {
-                    streams[i] = new MidiStream.MidiTone[0];
-                }
 
                 for (Map.Entry<Integer, List<MidiStream.MidiTone>> entry : toneMap.entrySet()) {
                     streams[entry.getKey()] = entry.getValue().toArray(new MidiStream.MidiTone[0]);

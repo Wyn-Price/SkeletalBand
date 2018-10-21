@@ -1,6 +1,7 @@
 package com.wynprice.boneophone.network;
 
 import com.wynprice.boneophone.entity.MusicalSkeleton;
+import com.wynprice.boneophone.types.BoneophoneType;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -58,9 +59,15 @@ public class S0MusicalSkeletonStateUpdate implements IMessage {
             Entity freind = world.getEntityByID(message.freindId);
             if(entity instanceof MusicalSkeleton && freind instanceof MusicalSkeleton) {
                 MusicalSkeleton skeleton = (MusicalSkeleton) entity;
-                skeleton.freind = (MusicalSkeleton) freind;
-                skeleton.isPlaying = message.mode == 1;
-                skeleton.isKeyboard = message.mode == 2;
+                if(skeleton.musicianType instanceof BoneophoneType) {
+                    BoneophoneType b = (BoneophoneType) skeleton.musicianType;
+                    b.freind = (MusicalSkeleton) freind;
+                    b.isPlaying = message.mode == 1;
+                    b.isKeyboard = message.mode == 2;
+                    if(message.mode == 2) {
+                        b.keyboardRotationYaw = skeleton.rotationYaw;
+                    }
+                }
             }
         }
     }

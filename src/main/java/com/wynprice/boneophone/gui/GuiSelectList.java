@@ -64,9 +64,9 @@ public class GuiSelectList {
         if(entries.size() > this.cellMax) {
             int ySize = (entries.size() - this.cellMax) * this.cellHeight;
             scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
-            scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
-            if (scrollYStart < this.yPos) {
-                scrollYStart = this.yPos;
+            scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight - 1;
+            if (scrollYStart < this.yPos - 1) {
+                scrollYStart = this.yPos - 1;
             }
         }
 
@@ -204,10 +204,10 @@ public class GuiSelectList {
 
             if(entries.size() > this.cellMax) {
                 int ySize = (entries.size() - this.cellMax) * this.cellHeight;
-                scrollLength = MathHelper.clamp(totalHeight * totalHeight / ySize, 32, totalHeight - 8);
-                scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight;
-                if (scrollYStart < this.yPos) {
-                    scrollYStart = this.yPos;
+                scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
+                scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight - 1;
+                if (scrollYStart < this.yPos - 1) {
+                    scrollYStart = this.yPos - 1;
                 }
             }
 
@@ -296,6 +296,10 @@ public class GuiSelectList {
 
     public SelectListEntry getActive() {
         return this.active;
+    }
+
+    public void setActive(SelectListEntry active) {
+        this.active = active;
     }
 
     interface SelectListEntry {

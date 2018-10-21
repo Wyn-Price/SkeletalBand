@@ -3,6 +3,8 @@ package com.wynprice.boneophone.network;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
+import com.wynprice.boneophone.types.ConductorType;
+import com.wynprice.boneophone.types.MusicianType;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,28 +15,27 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class S2SyncAndPlayMidi implements IMessage {
 
     private int entityID;
-    private byte[] abyteIn;
-    private MidiStream midi;
+    private byte[] abyte;
 
     @SuppressWarnings("unused")
     public S2SyncAndPlayMidi() {
     }
 
-    public S2SyncAndPlayMidi(int entityID, byte[] abyteIn) {
+    public S2SyncAndPlayMidi(int entityID, byte[] abyte) {
         this.entityID = entityID;
-        this.abyteIn = abyteIn;
+        this.abyte = abyte;
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityID);
-        MidiFileHandler.writeBytes(this.abyteIn, buf);
+        MidiFileHandler.writeBytes(this.abyte, buf);
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityID = buf.readInt();
-        this.midi = MidiFileHandler.readMidiFile(MidiFileHandler.readBytes(buf));
+        this.abyte = MidiFileHandler.readBytes(buf);
     }
 
     public static class Handler extends WorldModificationsMessageHandler<S2SyncAndPlayMidi, IMessage> {
@@ -43,8 +44,12 @@ public class S2SyncAndPlayMidi implements IMessage {
         protected void handleMessage(S2SyncAndPlayMidi message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityID);
             if(entity instanceof MusicalSkeleton) {
-                ((MusicalSkeleton) entity).currentlyPlaying = message.midi;
-                ((MusicalSkeleton) entity).playingTicks = 0;
+                MusicianType type = ((MusicalSkeleton) entity).musicianType;
+                if(type instanceof ConductorType) {
+                    ConductorType con = (ConductorType) type;
+                    con.currentlyPlaying = MidiFileHandler.readMidiFile(message.abyte);
+                    con.playingTicks = 0;
+                }
             }
         }
     }

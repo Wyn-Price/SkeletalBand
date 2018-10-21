@@ -2,19 +2,23 @@ package com.wynprice.boneophone.entity;
 
 import com.wynprice.boneophone.SkeletalBand;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelSkeleton;
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.client.renderer.entity.layers.LayerStrayClothing;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.monster.EntityStray;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.ItemLayerModel;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 
@@ -28,6 +32,12 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
 
     public MusicalSkeletonRenderer(RenderManager renderManagerIn) {
         super(renderManagerIn, new MusicalSkeletonModel(0F, true), 0.5F);
+        for (int i = 0; i < this.layerRenderers.size(); i++) {
+            if(((LayerRenderer<?>)this.layerRenderers.get(i)) instanceof LayerHeldItem) {
+                this.layerRenderers.remove(i);
+                this.layerRenderers.add(i, new SkeletonHeldItemLayer(this));
+            }
+        }
     }
 
 
@@ -44,12 +54,7 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
 
     @Override
     protected void applyRotations(MusicalSkeleton entity, float p_77043_2_, float rotationYaw, float partialTicks) {
-        if(entity.isPlaying) {
-            translate(0, -0.7F, 0);
-        } else if(entity.isKeyboard) {
-            rotate(90, 1, 0, 0);
-            translate(0, -entity.height / 2 - entity.width , -0.3);
-        }
+        entity.musicianType.setEntityTranslations();
         super.applyRotations(entity, p_77043_2_, rotationYaw, partialTicks);
     }
 
@@ -137,4 +142,65 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
             return true;
         }
     }
+
+    private class SkeletonHeldItemLayer implements LayerRenderer<MusicalSkeleton>
+    {
+        private final RenderLivingBase<?> livingEntityRenderer;
+
+        public SkeletonHeldItemLayer(RenderLivingBase<?> livingEntityRendererIn) {
+            this.livingEntityRenderer = livingEntityRendererIn;
+        }
+
+        public void doRenderLayer(MusicalSkeleton entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale)
+        {
+            boolean rightHand = entity.getPrimaryHand() == EnumHandSide.RIGHT;
+            ItemStack mainhand = entity.musicianType.getHeldItem(EnumHand.OFF_HAND);
+            ItemStack offhand = entity.musicianType.getHeldItem(EnumHand.OFF_HAND);
+
+            if (!mainhand.isEmpty() || !offhand.isEmpty()) {
+                GlStateManager.pushMatrix();
+
+                if (this.livingEntityRenderer.getMainModel().isChild) {
+                    GlStateManager.translate(0.0F, 0.75F, 0.0F);
+                    GlStateManager.scale(0.5F, 0.5F, 0.5F);
+                }
+
+                this.renderHeldItem(entity,  rightHand ? mainhand : offhand, ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, EnumHandSide.RIGHT);
+                this.renderHeldItem(entity, rightHand ? offhand : mainhand, ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND, EnumHandSide.LEFT);
+                GlStateManager.popMatrix();
+            }
+        }
+
+        private void renderHeldItem(EntityLivingBase p_188358_1_, ItemStack p_188358_2_, ItemCameraTransforms.TransformType p_188358_3_, EnumHandSide handSide)
+        {
+            if (!p_188358_2_.isEmpty())
+            {
+                GlStateManager.pushMatrix();
+
+                if (p_188358_1_.isSneaking())
+                {
+                    GlStateManager.translate(0.0F, 0.2F, 0.0F);
+                }
+                // Forge: moved this call down, fixes incorrect offset while sneaking.
+                this.translateToHand(handSide);
+                GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
+                GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
+                boolean flag = handSide == EnumHandSide.LEFT;
+                GlStateManager.translate((float)(flag ? -1 : 1) / 16.0F, 0.125F, -0.625F);
+                Minecraft.getMinecraft().getItemRenderer().renderItemSide(p_188358_1_, p_188358_2_, p_188358_3_, flag);
+                GlStateManager.popMatrix();
+            }
+        }
+
+        protected void translateToHand(EnumHandSide p_191361_1_)
+        {
+            ((ModelBiped)this.livingEntityRenderer.getMainModel()).postRenderArm(0.0625F, p_191361_1_);
+        }
+
+        public boolean shouldCombineTextures()
+        {
+            return false;
+        }
+    }
+
 }

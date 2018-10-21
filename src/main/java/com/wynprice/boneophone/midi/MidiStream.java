@@ -2,14 +2,10 @@ package com.wynprice.boneophone.midi;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.wynprice.boneophone.SkeletalBand;
-import com.wynprice.boneophone.SoundHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
 
 import javax.sound.midi.*;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -46,18 +42,21 @@ public class MidiStream {
         this.min = Integer.MAX_VALUE;
         this.max = Integer.MIN_VALUE;
         this.midiTicksPerMcTick = -1;
+
+        long size;
+
         try {
             Sequence sequence = MidiSystem.getSequence(this.streamSupplier.getWithException());
             float div = sequence.getDivisionType();
             boolean foundTempo = false;
 
+            size = sequence.getTickLength() + 1;
+
             if(div != Sequence.PPQ) {
                 this.midiTicksPerMcTick = sequence.getResolution() * (sequence.getDivisionType() / 20F); //20 ticks per second
                 foundTempo = true;
             }
-            for (long i = 0; i < sequence.getTickLength(); i++) {
-                map.put(i, Lists.newArrayList());
-            }
+
             for (Track track : sequence.getTracks()) {
                 for (int i = 0; i < track.size(); i++) {
                     MidiEvent event = track.get(i);
@@ -104,8 +103,7 @@ public class MidiStream {
         if(this.midiTicksPerMcTick == -1) {
             throw new IllegalArgumentException("Error loading. Unable to determine tick ratio: " + this.midiTicksPerMcTick);
         }
-        this.data = new MidiTone[map.size()][];
-        int t = 0;
+        this.data = new MidiTone[Math.toIntExact(size)][];
         for (Long key : map.keySet()) {
             List<MidiTone> lis = map.get(key);
             MidiTone[] ain = new MidiTone[lis.size()];
@@ -114,9 +112,8 @@ public class MidiStream {
                 tone.setPosition((float)(tone.getRawKey() - this.min) / (float)(this.max - this.min));
                 ain[i] = tone;
             }
-            this.data[t++] = ain;
+            this.data[Math.toIntExact(key)] = ain;
         }
-
     }
 
     public MidiTone[] getNotesAt(int ticks) {
@@ -125,7 +122,10 @@ public class MidiStream {
 
         List<MidiTone> list = Lists.newArrayList();
         for (int i = start; i < end; i++) {
-            Collections.addAll(list, this.data[i % this.data.length]);
+            MidiTone[] dataum = this.data[i % this.data.length];
+            if(dataum != null) {
+                Collections.addAll(list, dataum);
+            }
         }
         return list.toArray(new MidiTone[0]);
     }
@@ -137,6 +137,19 @@ public class MidiStream {
         return CACHE.computeIfAbsent(location, location1 -> new MidiStream(() -> Minecraft.getMinecraft().getResourceManager().getResource(fullLoc).getInputStream()));
     }
 
+    public static class MidiTrack {
+
+        public final int totalNotes;
+        private final float midiTicksPerMcTick;
+        private final MidiTone[][] data;
+
+        public MidiTrack(int totalNotes, float midiTicksPerMcTick, MidiTone[][] data) {
+            this.totalNotes = totalNotes;
+            this.midiTicksPerMcTick = midiTicksPerMcTick;
+            this.data = data;
+        }
+    }
+
     public static class MidiTone {
         final int key;
         private float position = -1F;
@@ -145,8 +158,8 @@ public class MidiStream {
             this.key = key;
         }
 
-        public SoundEvent getEvent() {
-            return SoundHandler.BONEOPHONE_OCTAVES[(this.key / 12)];
+        public int getOctave() {
+            return this.key / 12;
         }
 
         public int getKey() {

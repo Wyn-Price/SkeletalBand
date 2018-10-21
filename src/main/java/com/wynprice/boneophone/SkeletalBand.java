@@ -9,10 +9,10 @@ import com.wynprice.boneophone.entity.ThrowableNoteEntity;
 import com.wynprice.boneophone.entity.ThrowableNoteRenderer;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
-import com.wynprice.boneophone.network.C1UploadMidiFile;
-import com.wynprice.boneophone.network.C3SplitUploadMidiFile;
-import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
-import com.wynprice.boneophone.network.S2SyncAndPlayMidi;
+import com.wynprice.boneophone.network.*;
+import com.wynprice.boneophone.types.BoneophoneType;
+import com.wynprice.boneophone.types.ConductorType;
+import com.wynprice.boneophone.types.MusicianTypeFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.crash.CrashReport;
@@ -43,6 +43,8 @@ import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -69,6 +71,8 @@ public class SkeletalBand {
     @GameRegistry.ObjectHolder(MODID + ":throwable_note")
     public static Item THROWABLE_NOTE;
 
+    public static IForgeRegistry<MusicianTypeFactory> MUSICIAN_REGISTRY;
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER = event.getModLog();
@@ -80,6 +84,11 @@ public class SkeletalBand {
         NETWORK.registerMessage(new C1UploadMidiFile.Handler(), C1UploadMidiFile.class, 1, Side.SERVER);
         NETWORK.registerMessage(new S2SyncAndPlayMidi.Handler(), S2SyncAndPlayMidi.class, 2, Side.CLIENT);
         NETWORK.registerMessage(new C3SplitUploadMidiFile.Handler(), C3SplitUploadMidiFile.class, 3, Side.SERVER);
+        NETWORK.registerMessage(new C4SkeletonChangeType.Handler(), C4SkeletonChangeType.class, 4, Side.SERVER);
+        NETWORK.registerMessage(new S5SyncSkeletonChangeType.Handler(), S5SyncSkeletonChangeType.class, 5, Side.CLIENT);
+        NETWORK.registerMessage(new C6SkeletonChangeChannel.Handler(), C6SkeletonChangeChannel.class, 6, Side.SERVER);
+        NETWORK.registerMessage(new S7SyncSkeletonChangeChannel.Handler(), S7SyncSkeletonChangeChannel.class, 7, Side.CLIENT);
+
     }
 
     @EventHandler
@@ -143,6 +152,23 @@ public class SkeletalBand {
                         return ItemStack.EMPTY;
                     }
                 })
+        );
+    }
+
+    @SubscribeEvent
+    public static void onRegistryRegister(RegistryEvent.NewRegistry event) {
+        MUSICIAN_REGISTRY = new RegistryBuilder<MusicianTypeFactory>()
+                .setName(new ResourceLocation(MODID, "musician_type"))
+                .setType(MusicianTypeFactory.class)
+                .setDefaultKey(new ResourceLocation(MODID, "conductor"))
+                .create();
+    }
+
+    @SubscribeEvent
+    public static void onMusicianTypeRegister(RegistryEvent.Register<MusicianTypeFactory> event) {
+        event.getRegistry().registerAll(
+                new MusicianTypeFactory(ConductorType::new).setRegistryName("conductor"),
+                new MusicianTypeFactory(BoneophoneType::new).setRegistryName("boneophone")
         );
     }
 
