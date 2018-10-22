@@ -2,9 +2,12 @@ package com.wynprice.boneophone.gui;
 
 import com.google.common.collect.Lists;
 import com.wynprice.boneophone.SkeletalBand;
+import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.midi.MidiFileHandler;
+import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.C4SkeletonChangeType;
 import com.wynprice.boneophone.network.C6SkeletonChangeChannel;
+import com.wynprice.boneophone.types.ConductorType;
 import com.wynprice.boneophone.types.MusicianTypeFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -17,6 +20,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.fixes.EntityId;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.FileUtils;
@@ -24,6 +28,7 @@ import org.lwjgl.opengl.GL11;
 
 import javax.sound.midi.InvalidMidiDataException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;

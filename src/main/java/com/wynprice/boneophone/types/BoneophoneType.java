@@ -162,11 +162,21 @@ public class BoneophoneType extends MusicianType {
 
         //If one hand isn't in use, but has more than one note, have the other hand fill in
         if (!usedRight && usedSecondLeft) {
+            if(secondLeftNote > leftNote) {
+                float ref = secondLeftNote;
+                secondLeftNote = leftNote;
+                leftNote = ref;
+            }
             usedRight = true;
             rightNote = secondLeftNote;
         }
 
         if (!usedLeft && usedSecondRight) {
+            if(secondRightNote > leftNote) {
+                float ref = secondRightNote;
+                secondRightNote = rightNote;
+                rightNote = ref;
+            }
             usedLeft = true;
             leftNote = secondRightNote;
         }

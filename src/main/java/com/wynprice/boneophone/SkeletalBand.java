@@ -88,6 +88,8 @@ public class SkeletalBand {
         NETWORK.registerMessage(new S5SyncSkeletonChangeType.Handler(), S5SyncSkeletonChangeType.class, 5, Side.CLIENT);
         NETWORK.registerMessage(new C6SkeletonChangeChannel.Handler(), C6SkeletonChangeChannel.class, 6, Side.SERVER);
         NETWORK.registerMessage(new S7SyncSkeletonChangeChannel.Handler(), S7SyncSkeletonChangeChannel.class, 7, Side.CLIENT);
+        NETWORK.registerMessage(new C8SkeletonChangeTrack.Handler(), C8SkeletonChangeTrack.class, 8, Side.SERVER);
+        NETWORK.registerMessage(new S9SyncSkeletonChangeTrack.Handler(), S9SyncSkeletonChangeTrack.class, 9, Side.CLIENT);
 
     }
 

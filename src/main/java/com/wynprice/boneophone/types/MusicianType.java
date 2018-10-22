@@ -57,6 +57,10 @@ public class MusicianType {
         this.entity.setChannel(channel);
     }
 
+    public void setTrack(int track) {
+        this.entity.setTrackID(track);
+    }
+
     public boolean processInteract(EntityPlayer player, EnumHand hand) {
         if(this.entity.world.isRemote) {
             if(player.isSneaking()) {
@@ -71,7 +75,7 @@ public class MusicianType {
 
     @SideOnly(Side.CLIENT)
     protected void displayMidiGui() {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiMusician(this.entity.getEntityId(), () -> this.entity.musicianType.factoryType, this.entity::getChannel));
+        Minecraft.getMinecraft().displayGuiScreen(new GuiMusician(this.entity.getEntityId(), () -> this.entity.musicianType.factoryType, this.entity::getChannel, this.entity::getTrackID));
     }
 
     public Vec2f getSize() {

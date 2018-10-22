@@ -8,27 +8,25 @@ import net.minecraft.util.ResourceLocation;
 import javax.sound.midi.*;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class MidiStream {
 
-    MidiTone[][] data = new MidiTone[0][0];
+    MidiTrack[] tracks = new MidiTrack[0];
+    //    MidiTone[][] data = new MidiTone[0][0];
     private ExceptionSupplier<InputStream> streamSupplier;
 
     float midiTicksPerMcTick = -1;
-    int min;
-    int max;
 
-    MidiStream(MidiTone[][] data, float midiTicksPerMcTick, int min, int max) {
-        this.data = data;
+    MidiStream(MidiTrack[] tracks, float midiTicksPerMcTick) {
+        this.tracks = tracks;
         this.midiTicksPerMcTick = midiTicksPerMcTick;
-        this.min = min;
-        this.max = max;
     }
 
-    MidiStream(ExceptionSupplier<InputStream> streamSupplier) {
+    public MidiStream(ExceptionSupplier<InputStream> streamSupplier) {
         this.streamSupplier = streamSupplier;
         this.load();
     }
@@ -37,20 +35,16 @@ public class MidiStream {
         if(this.streamSupplier == null) {
             return;
         }
-        Map<Long, List<MidiTone>> map = Maps.newHashMap();
-
-        this.min = Integer.MAX_VALUE;
-        this.max = Integer.MIN_VALUE;
+        List<MidiTrack> trackList = Lists.newArrayList();
         this.midiTicksPerMcTick = -1;
 
-        long size;
 
         try {
             Sequence sequence = MidiSystem.getSequence(this.streamSupplier.getWithException());
             float div = sequence.getDivisionType();
             boolean foundTempo = false;
 
-            size = sequence.getTickLength() + 1;
+            long size = sequence.getTickLength() + 1;
 
             if(div != Sequence.PPQ) {
                 this.midiTicksPerMcTick = sequence.getResolution() * (sequence.getDivisionType() / 20F); //20 ticks per second
@@ -58,6 +52,14 @@ public class MidiStream {
             }
 
             for (Track track : sequence.getTracks()) {
+                Map<Long, List<MidiTone>> map = Maps.newHashMap();
+
+                int min = Integer.MAX_VALUE;
+                int max = Integer.MIN_VALUE;
+
+                String name04 = "";
+                String name03 = "";
+
                 for (int i = 0; i < track.size(); i++) {
                     MidiEvent event = track.get(i);
                     MidiMessage message = event.getMessage();
@@ -66,7 +68,17 @@ public class MidiStream {
 //                        if(mm.getType() == 0x01) { //Text event
 //
 //                        } else
-                        if(mm.getType() == 0x51 && !foundTempo) { //Set Tempo
+                        if(mm.getType() == 0x04 || mm.getType() == 0x03) { //Instruemtn name
+                            StringBuilder sb = new StringBuilder();
+                            for (byte b : mm.getData()) {
+                                sb.append((char)b);
+                            }
+                            if(mm.getType() == 0x04) {
+                                name04 = sb.toString();
+                            } else {
+                                name03 = sb.toString();
+                            }
+                        } else if(mm.getType() == 0x51 && !foundTempo) { //Set Tempo
 
                             //Tempo is stored as a 3-byte big-endian integer
                             //Microseconds per minute is calculated as 6e7 / (tt tt tt)
@@ -91,43 +103,52 @@ public class MidiStream {
                                 foundTempo = true;
                             }
                             map.computeIfAbsent(event.getTick(), l -> Lists.newArrayList()).add(new MidiTone(sm.getData1()));
-                            this.min = Math.min(this.min, sm.getData1());
-                            this.max = Math.max(this.max, sm.getData1());
+                            min = Math.min(min, sm.getData1());
+                            max = Math.max(max, sm.getData1());
                         }
                     }
+                }
+                int totalNotes = 0;
+                MidiTone[][] data = new MidiTone[Math.toIntExact(size)][];
+                for (Long key : map.keySet()) {
+                    List<MidiTone> lis = map.get(key);
+                    MidiTone[] ain = new MidiTone[lis.size()];
+                    for (int i = 0; i < lis.size(); i++) {
+                        totalNotes++;
+                        MidiTone tone = lis.get(i);
+                        tone.setPosition((float)(tone.getRawKey() - min) / (float)(max - min));
+                        ain[i] = tone;
+                    }
+                    data[Math.toIntExact(key)] = ain;
+                }
+                if(this.midiTicksPerMcTick == -1) {
+                    throw new IllegalArgumentException("Error loading. Unable to determine tick ratio");
+                }
+                if(totalNotes != 0) {
+                    trackList.add(new MidiTrack(name04.isEmpty() ? name03 : name04, totalNotes, min, max, this.midiTicksPerMcTick, data));
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        if(this.midiTicksPerMcTick == -1) {
-            throw new IllegalArgumentException("Error loading. Unable to determine tick ratio: " + this.midiTicksPerMcTick);
-        }
-        this.data = new MidiTone[Math.toIntExact(size)][];
-        for (Long key : map.keySet()) {
-            List<MidiTone> lis = map.get(key);
-            MidiTone[] ain = new MidiTone[lis.size()];
-            for (int i = 0; i < lis.size(); i++) {
-                MidiTone tone = lis.get(i);
-                tone.setPosition((float)(tone.getRawKey() - this.min) / (float)(this.max - this.min));
-                ain[i] = tone;
-            }
-            this.data[Math.toIntExact(key)] = ain;
-        }
+
+        this.tracks = trackList.toArray(new MidiTrack[0]);
     }
 
-    public MidiTone[] getNotesAt(int ticks) {
-        int start = (int) Math.floor(ticks * this.midiTicksPerMcTick);
-        int end = (int) Math.floor((ticks + 1) * this.midiTicksPerMcTick);
-
-        List<MidiTone> list = Lists.newArrayList();
-        for (int i = start; i < end; i++) {
-            MidiTone[] dataum = this.data[i % this.data.length];
-            if(dataum != null) {
-                Collections.addAll(list, dataum);
-            }
+    public MidiTrack getTrackAt(int index) {
+        if(this.tracks.length == 0) {
+            return MidiTrack.EMPTY;
         }
-        return list.toArray(new MidiTone[0]);
+        if(index < 0 || index >= this.tracks.length) {
+            return this.tracks[0];
+        }
+        return this.tracks[index];
+    }
+
+    public List<MidiTrack> getTracks() {
+        List<MidiTrack> out = Lists.newLinkedList();
+        Collections.addAll(out, this.tracks);
+        return out;
     }
 
     private static final Map<ResourceLocation, MidiStream> CACHE = Maps.newHashMap();
@@ -139,14 +160,40 @@ public class MidiStream {
 
     public static class MidiTrack {
 
+        public static final MidiTrack EMPTY = new MidiTrack("", 0, 0, 0, 0, new MidiTone[0][]);
+
+        public final String name;
         public final int totalNotes;
+        public final int min;
+        public final int max;
         private final float midiTicksPerMcTick;
         private final MidiTone[][] data;
 
-        public MidiTrack(int totalNotes, float midiTicksPerMcTick, MidiTone[][] data) {
+        public MidiTrack(String name, int totalNotes, int min, int max, float midiTicksPerMcTick, MidiTone[][] data) {
+            this.name = name;
             this.totalNotes = totalNotes;
+            this.min = min;
+            this.max = max;
             this.midiTicksPerMcTick = midiTicksPerMcTick;
             this.data = data;
+        }
+
+        public MidiTone[] getNotesAt(int ticks) {
+            int start = (int) Math.floor(ticks * this.midiTicksPerMcTick);
+            int end = (int) Math.floor((ticks + 1) * this.midiTicksPerMcTick);
+
+            List<MidiTone> list = Lists.newArrayList();
+            for (int i = start; i < end; i++) {
+                MidiTone[] dataum = this.data[i % this.data.length];
+                if(dataum != null) {
+                    Collections.addAll(list, dataum);
+                }
+            }
+            return list.toArray(new MidiTone[0]);
+        }
+
+        public MidiTone[][] getData() {
+            return data;
         }
     }
 
