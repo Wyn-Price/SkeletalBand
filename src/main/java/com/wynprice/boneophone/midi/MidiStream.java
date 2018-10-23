@@ -8,7 +8,6 @@ import net.minecraft.util.ResourceLocation;
 import javax.sound.midi.*;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -125,7 +124,7 @@ public class MidiStream {
                     throw new IllegalArgumentException("Error loading. Unable to determine tick ratio");
                 }
                 if(totalNotes != 0) {
-                    trackList.add(new MidiTrack(name04.isEmpty() ? name03 : name04, totalNotes, min, max, this.midiTicksPerMcTick, data));
+                    trackList.add(new MidiTrack(name04.isEmpty() ? name03 : name04, trackList.size(), totalNotes, min, max, this.midiTicksPerMcTick, data));
                 }
             }
         } catch (Exception e) {
@@ -160,24 +159,25 @@ public class MidiStream {
 
     public static class MidiTrack {
 
-        public static final MidiTrack EMPTY = new MidiTrack("", 0, 0, 0, 0, new MidiTone[0][]);
+        public static final MidiTrack EMPTY = new MidiTrack("", 0, 0, 0, 0, 0, new MidiTone[0][]);
 
         public final String name;
+        public final int id;
         public final int totalNotes;
         public final int min;
         public final int max;
         private final float midiTicksPerMcTick;
         private final MidiTone[][] data;
 
-        public MidiTrack(String name, int totalNotes, int min, int max, float midiTicksPerMcTick, MidiTone[][] data) {
+        public MidiTrack(String name, int id, int totalNotes, int min, int max, float midiTicksPerMcTick, MidiTone[][] data) {
             this.name = name;
+            this.id = id;
             this.totalNotes = totalNotes;
             this.min = min;
             this.max = max;
             this.midiTicksPerMcTick = midiTicksPerMcTick;
             this.data = data;
         }
-
         public MidiTone[] getNotesAt(int ticks) {
             int start = (int) Math.floor(ticks * this.midiTicksPerMcTick);
             int end = (int) Math.floor((ticks + 1) * this.midiTicksPerMcTick);

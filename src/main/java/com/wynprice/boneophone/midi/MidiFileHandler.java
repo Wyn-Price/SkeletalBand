@@ -106,7 +106,7 @@ public class MidiFileHandler {
         InputStream baisRaw = new ByteArrayInputStream(abyte);
         try(GZIPInputStream gzipIn = new GZIPInputStream(baisRaw)) {
             try(DataInputStream is = new DataInputStream(gzipIn)) {
-                List<MidiStream.MidiTrack> trackMap = Lists.newArrayList();
+                List<MidiStream.MidiTrack> trackList = Lists.newArrayList();
 
                 float ratio = is.readFloat();
 
@@ -143,10 +143,10 @@ public class MidiFileHandler {
                         atone[entry.getKey()] = entry.getValue().toArray(new MidiStream.MidiTone[0]);
 
                     }
-                    trackMap.add(new MidiStream.MidiTrack(name.toString(), noteAmount, min, max, ratio, atone));
+                    trackList.add(new MidiStream.MidiTrack(name.toString(), trackID, noteAmount, min, max, ratio, atone));
                 }
                 SkeletalBand.LOGGER.info("Read midi file, took {}ms", System.currentTimeMillis() - start);
-                return new MidiStream(trackMap.toArray(new MidiStream.MidiTrack[0]), ratio);
+                return new MidiStream(trackList.toArray(new MidiStream.MidiTrack[0]), ratio);
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -46,9 +46,7 @@ public class S2SyncAndPlayMidi implements IMessage {
             if(entity instanceof MusicalSkeleton) {
                 MusicianType type = ((MusicalSkeleton) entity).musicianType;
                 if(type instanceof ConductorType) {
-                    ConductorType con = (ConductorType) type;
-                    con.currentlyPlaying = MidiFileHandler.readMidiFile(message.abyte);
-                    con.playingTicks = 0;
+                    ((ConductorType) type).setCurrentlyPlaying(MidiFileHandler.readMidiFile(message.abyte));
                 }
             }
         }

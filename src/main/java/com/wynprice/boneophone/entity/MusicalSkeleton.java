@@ -61,6 +61,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
     public void onLivingUpdate() {
         super.onLivingUpdate();
         this.musicianType.onTick();
+
         Vec2f vec = this.musicianType.getSize();
         this.setSize(vec.x, vec.y);
     }

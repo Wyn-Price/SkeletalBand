@@ -2,21 +2,18 @@ package com.wynprice.boneophone.gui;
 
 import com.google.common.collect.Lists;
 import com.wynprice.boneophone.SkeletalBand;
-import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.C4SkeletonChangeType;
 import com.wynprice.boneophone.network.C6SkeletonChangeChannel;
 import com.wynprice.boneophone.network.C8SkeletonChangeTrack;
 import com.wynprice.boneophone.types.ConductorType;
-import com.wynprice.boneophone.types.MusicianType;
 import com.wynprice.boneophone.types.MusicianTypeFactory;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.entity.Entity;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +24,7 @@ public class GuiMusician extends GuiScreen {
 
     private final int entityID;
     private final Supplier<MusicianTypeFactory> typeGetter;
+    private final ConductorType conductor;
     private final IntSupplier channelSupplier;
     private final IntSupplier trackIDSupplier;
     private GuiTextField channelField;
@@ -34,9 +32,10 @@ public class GuiMusician extends GuiScreen {
     private GuiSelectList musicianTypes;
     private GuiSelectList trackList;
 
-    public GuiMusician(int entityID, Supplier<MusicianTypeFactory> typeGetter, IntSupplier channelSupplier, IntSupplier trackIDSupplier) {
+    public GuiMusician(int entityID, Supplier<MusicianTypeFactory> typeGetter, ConductorType conductor, IntSupplier channelSupplier, IntSupplier trackIDSupplier) {
         this.entityID = entityID;
         this.typeGetter = typeGetter;
+        this.conductor = conductor;
         this.channelSupplier = channelSupplier;
         this.trackIDSupplier = trackIDSupplier;
     }
@@ -57,18 +56,13 @@ public class GuiMusician extends GuiScreen {
         List<TrackEntry> trackList = Lists.newArrayList();
         int trackID = this.trackIDSupplier.getAsInt();
         TrackEntry activeTrack = null;
-        for (Entity entity : Minecraft.getMinecraft().world.loadedEntityList) {
-            if(entity instanceof MusicalSkeleton) {
-                MusicianType type = ((MusicalSkeleton)entity).musicianType;
-                if(type instanceof ConductorType) {
-                    ConductorType con = (ConductorType) type;
-                    List<MidiStream.MidiTrack> tracks = con.currentlyPlaying.getTracks();
-                    for (int i = 0; i < tracks.size(); i++) {
-                        MidiStream.MidiTrack track = tracks.get(i);
-                        TrackEntry entry = new TrackEntry(i, track.name, track.totalNotes, con.assignedMap.getOrDefault(i, 0));
-                        trackList.add(i == trackID ? activeTrack = entry : entry);
-                    }
-                }
+
+        if(this.conductor != null) {
+            List<MidiStream.MidiTrack> tracks = this.conductor.getCurrentlyPlaying().getTracks();
+            for (int i = 0; i < tracks.size(); i++) {
+                MidiStream.MidiTrack track = tracks.get(i);
+                TrackEntry entry = new TrackEntry(this.conductor, track);
+                trackList.add(i == trackID ? activeTrack = entry : entry);
             }
         }
 
@@ -161,38 +155,34 @@ public class GuiMusician extends GuiScreen {
 
     private class TrackEntry implements GuiSelectList.SelectListEntry {
 
-        private final int id;
-        private final int assigned;
-        private final String name;
+        private final String trackName;
+        @Nonnull
+        private final ConductorType conductor;
+        private final MidiStream.MidiTrack track;
 
-        private TrackEntry(int id, String name, int totalNotes, int assigned) {
-            this.id = id;
-            this.name = (name.isEmpty() ? "Unknown Track" :  name) + " (" + totalNotes + " Notes)";
-            this.assigned = assigned;
+        private TrackEntry(@Nonnull ConductorType conductor, MidiStream.MidiTrack track) {
+            this.conductor = conductor;
+            this.track = track;
+            this.trackName = (track.name.isEmpty() ? "Unknown Track" :  track.name) + " (" + track.totalNotes + " Notes)";
         }
 
         @Override
         public void draw(int x, int y) {
             mc.fontRenderer.drawString(this.getSearch(), x + 21, y + 6, -1);
-            mc.fontRenderer.drawString(String.valueOf(this.assigned), x + GuiMusician.this.width / 2 - 40 - mc.fontRenderer.getStringWidth(String.valueOf(this.assigned)), y + 6, -1);
+
+            int assigned = this.conductor.getAmountPlaying(this.track);
+            mc.fontRenderer.drawString(String.valueOf(assigned), x + GuiMusician.this.width / 2 - 40 - mc.fontRenderer.getStringWidth(String.valueOf(assigned)), y + 6, -1);
+
         }
 
         @Override
         public String getSearch() {
-            return this.name;
+            return this.trackName;
         }
 
         @Override
         public void onClicked(int relMouseX, int relMouseY) {
-            SkeletalBand.NETWORK.sendToServer(new C8SkeletonChangeTrack(GuiMusician.this.entityID, this.id));
-            for (Entity entity : Minecraft.getMinecraft().world.loadedEntityList) {
-                if(entity instanceof MusicalSkeleton) {
-                    MusicianType type = ((MusicalSkeleton)entity).musicianType;
-                    if(type instanceof ConductorType) {
-                        ((ConductorType) type).assignedMap.put(this.id, ((ConductorType) type).assignedMap.getOrDefault(this.id, 0) + 1);
-                    }
-                }
-            }
+            SkeletalBand.NETWORK.sendToServer(new C8SkeletonChangeTrack(GuiMusician.this.entityID, this.track.id));
         }
     }
 }

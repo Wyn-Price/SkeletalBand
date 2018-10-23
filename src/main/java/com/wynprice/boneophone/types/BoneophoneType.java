@@ -1,6 +1,5 @@
 package com.wynprice.boneophone.types;
 
-import com.sun.javafx.geom.Vec2d;
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.SoundHandler;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
@@ -108,6 +107,14 @@ public class BoneophoneType extends MusicianType {
             this.isPlaying = false;
             this.freind = null;
         }
+        super.onTick();
+    }
+
+    @Override
+    protected void checkAssignment() {
+        if(this.isPlaying) {
+            super.checkAssignment();
+        }
     }
 
     @Override
@@ -212,9 +219,9 @@ public class BoneophoneType extends MusicianType {
 
     @Override
     public boolean processInteract(EntityPlayer player, EnumHand hand) {
-//        if(this.isKeyboard && this.freind != null && this.freind.musicianType != null) {
-//            return this.freind.musicianType.processInteract(player, hand);
-//        }
+        if(this.isKeyboard && this.freind != null && this.freind.musicianType != null) {
+            return this.freind.musicianType.processInteract(player, hand);
+        }
         return super.processInteract(player, hand);
     }
 
@@ -344,13 +351,13 @@ public class BoneophoneType extends MusicianType {
         ModelBiped m = (ModelBiped) model;
         if(this.isPlaying) {
 
-            boolean doLeft = this.leftTicksFromHit <= ConductorType.ticksToHit;
-            boolean doRight = this.rightTicksFromHit <= ConductorType.ticksToHit;
+            boolean doLeft = this.leftTicksFromHit <= ticksToHit;
+            boolean doRight = this.rightTicksFromHit <= ticksToHit;
 
             float rad = (float) Math.toRadians(60F); //Total Y angle that can be covered.
 
             if(doLeft) {
-                float lLerpHit = (this.leftTicksFromHit + partialTicks) / ConductorType.ticksToHit;
+                float lLerpHit = (this.leftTicksFromHit + partialTicks) / ticksToHit;
                 float targetL = (this.prevLeftTargetHit + (this.leftTargetHit - this.prevLeftTargetHit) * lLerpHit) - 0.65F;
 
                 this.ry = targetL * rad;
@@ -358,7 +365,7 @@ public class BoneophoneType extends MusicianType {
             }
 
             if(doRight) {
-                float rLerpHit = (this.rightTicksFromHit + partialTicks) / ConductorType.ticksToHit;
+                float rLerpHit = (this.rightTicksFromHit + partialTicks) / ticksToHit;
                 float targetR = (this.prevRightTargetHit + (this.rightTargetHit - this.prevRightTargetHit) * rLerpHit) - 0.35F;
 
                 this.ly = targetR * rad;

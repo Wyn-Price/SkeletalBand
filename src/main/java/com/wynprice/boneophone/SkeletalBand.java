@@ -37,6 +37,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
@@ -136,6 +137,11 @@ public class SkeletalBand {
                 },
                 THROWABLE_NOTE
         );
+    }
+
+    @SubscribeEvent
+    public static void onWorldTickLast(TickEvent.WorldTickEvent.WorldTickEvent event) {
+
     }
 
     @SubscribeEvent
