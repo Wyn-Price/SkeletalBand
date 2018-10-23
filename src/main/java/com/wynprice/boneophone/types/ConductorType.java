@@ -32,7 +32,9 @@ public class ConductorType extends MusicianType {
                 type.playTones(track.getNotesAt(this.playingTicks));
             }
         }
-        this.playingTicks++;
+        if(!this.entity.paused) {
+            this.playingTicks++;
+        }
     }
 
     @Override
