@@ -33,8 +33,8 @@ public class ConductorType extends MusicianType {
     @Override
     public void onTick() {
         super.onTick();
-        if(this.entity.world.isRemote && !this.currentlyPlaying.hash.equals(this.currentlyPlayingHash)) {
-            SkeletalBand.NETWORK.sendToDimension(new C10SkeletonPlayMidi(this.entity.getEntityId(), this.currentlyPlayingHash), this.entity.dimension);
+        if(this.entity.world.isRemote && !this.currentlyPlaying.hash.equals(this.currentlyPlayingHash) && !this.currentlyPlayingHash.isEmpty()) {
+            SkeletalBand.NETWORK.sendToServer(new C10SkeletonPlayMidi(this.entity.getEntityId(), this.currentlyPlayingHash));
             this.currentlyPlayingHash = this.currentlyPlaying.hash;
         }
         if(this.entity.world.isRemote && !this.entity.paused) {
