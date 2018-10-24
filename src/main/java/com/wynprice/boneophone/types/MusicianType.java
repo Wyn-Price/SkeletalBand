@@ -123,12 +123,10 @@ public class MusicianType {
     }
 
     public boolean processInteract(EntityPlayer player, EnumHand hand) {
-        if(this.entity.world.isRemote) {
-            if(player.isSneaking()) {
-                this.entity.paused = !this.entity.paused;
-            } else {
-                this.displayMidiGui();
-            }
+        if(player.isSneaking()) {
+            this.entity.paused = !this.entity.paused;
+        } else if(this.entity.world.isRemote){
+            this.displayMidiGui();
         }
         player.swingArm(hand);
         return true;
