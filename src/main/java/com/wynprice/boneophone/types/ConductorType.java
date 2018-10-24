@@ -39,6 +39,9 @@ public class ConductorType extends MusicianType {
         }
         if(this.entity.world.isRemote && !this.entity.paused) {
             for (MusicianType type : this.assignedMap.keySet()) {
+                if(type.entity.paused) {
+                    continue;
+                }
                 MidiStream.MidiTrack track = this.currentlyPlaying.getTrackAt(type.entity.getTrackID());
                 type.setAnimationsFromTones(track.getNotesAt(this.playingTicks + ticksToHit));
                 type.playTones(track.getNotesAt(this.playingTicks));
