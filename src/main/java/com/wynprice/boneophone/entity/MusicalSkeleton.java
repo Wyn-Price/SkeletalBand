@@ -76,6 +76,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         nbt.setInteger("SkeletonType", this.type.ordinal());
         nbt.setInteger("Channel", this.channel);
         nbt.setInteger("Track", this.trackID);
+        nbt.setBoolean("Paused", this.paused);
 
         nbt.setString("MusicianFactoryType", Objects.requireNonNull(this.musicianType.factoryType.getRegistryName()).toString());
         nbt.setTag("MusicianType", this.musicianType.writeToNBT(new NBTTagCompound()));
@@ -88,6 +89,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         this.type = SkeletonType.values()[nbt.getInteger("SkeletonType") % SkeletonType.values().length];
         this.channel = nbt.getInteger("Channel");
         this.trackID = nbt.getInteger("Track");
+        this.paused = nbt.getBoolean("Paused");
 
         this.musicianType = Objects.requireNonNull(SkeletalBand.MUSICIAN_REGISTRY.getValue(new ResourceLocation(nbt.getString("MusicianFactoryType")))).createType(this);
         this.musicianType.readFromNBT(nbt.getCompoundTag("MusicianType"));
@@ -124,6 +126,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         buffer.writeInt(this.type.ordinal());
         buffer.writeInt(this.channel);
         buffer.writeInt(this.trackID);
+        buffer.writeBoolean(this.paused);
         ByteBufUtils.writeRegistryEntry(buffer, this.musicianType.factoryType);
         this.musicianType.writeToBuf(buffer);
     }
@@ -133,6 +136,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         this.type = SkeletonType.values()[additionalData.readInt()];
         this.channel = additionalData.readInt();
         this.trackID = additionalData.readInt();
+        this.paused = additionalData.readBoolean();
         this.musicianType = ByteBufUtils.readRegistryEntry(additionalData, SkeletalBand.MUSICIAN_REGISTRY).createType(this);
         this.musicianType.readFromBuf(additionalData);
     }

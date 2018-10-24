@@ -220,6 +220,7 @@ public class BoneophoneType extends MusicianType {
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         nbt.setBoolean("Keyboard", this.isKeyboard);
         nbt.setBoolean("Playing", this.isPlaying);
+        nbt.setFloat("KeyboardRotation", this.keyboardRotationYaw);
         return this.fieldReference.writeToNBT(nbt);
     }
 
@@ -227,6 +228,7 @@ public class BoneophoneType extends MusicianType {
     public void readFromNBT(NBTTagCompound nbt) {
         this.isKeyboard = nbt.getBoolean("Keyboard");
         this.isPlaying = nbt.getBoolean("Playing");
+        this.keyboardRotationYaw = nbt.getFloat("KeyboardRotation");
         this.fieldReference.readFromNBT(nbt);
     }
 
@@ -234,6 +236,7 @@ public class BoneophoneType extends MusicianType {
     public void writeToBuf(ByteBuf buf) {
         buf.writeBoolean(this.isKeyboard);
         buf.writeBoolean(this.isPlaying);
+        buf.writeFloat(this.keyboardRotationYaw);
         this.fieldReference.writeToByteBuf(buf);
     }
 
@@ -241,6 +244,7 @@ public class BoneophoneType extends MusicianType {
     public void readFromBuf(ByteBuf buf) {
         this.isKeyboard = buf.readBoolean();
         this.isPlaying = buf.readBoolean();
+        this.keyboardRotationYaw = buf.readFloat();
         this.fieldReference.readFromByteBuf(buf);
     }
 
