@@ -1,4 +1,4 @@
-package com.wynprice.boneophone.gui;
+package com.wynprice.boneophone.midi;
 
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.network.C1UploadMidiFile;

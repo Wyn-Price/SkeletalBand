@@ -1,5 +1,6 @@
 package com.wynprice.boneophone.types;
 
+import com.wynprice.boneophone.entity.EntityFieldReference;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.gui.GuiMusician;
 import com.wynprice.boneophone.midi.MidiStream;
@@ -12,12 +13,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec2f;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.UUID;
 
 public class MusicianType {
 
@@ -27,19 +27,31 @@ public class MusicianType {
 
     public final MusicianTypeFactory factoryType;
 
-    @Nullable
-    private ConductorType conductor;
-    @Nullable
-    private UUID conductorUUID;
+    private final EntityFieldReference<MusicalSkeleton, ConductorType> conductorRef;
 
     public MusicianType(MusicalSkeleton entity, MusicianTypeFactory factoryType) {
         this.entity = entity;
         this.factoryType = factoryType;
+
+        this.conductorRef = new EntityFieldReference<MusicalSkeleton, ConductorType>(MusicalSkeleton.class, "Conductor", s -> s != this.entity && s.musicianType instanceof ConductorType && s.getChannel() == MusicianType.this.entity.getChannel(), s -> (ConductorType) s.musicianType) {
+            @Override
+            public void setReferenceFromEntity(@Nonnull MusicalSkeleton entity) {
+                if(this.entityPredicate.test(entity)) {
+                    ConductorType conductor = ((ConductorType)entity.musicianType);
+                    conductor.assign(MusicianType.this, conductor.getCurrentlyPlaying().getTrackAt(MusicianType.this.entity.getTrackID()));
+                }
+                super.setReferenceFromEntity(entity);
+            }
+        };
     }
 
 
     public void onTick() {
         this.checkAssignment();
+    }
+
+    public MusicalSkeleton getEntity() {
+        return entity;
     }
 
     protected void checkAssignment() {
@@ -63,67 +75,39 @@ public class MusicianType {
     }
 
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        if(this.conductorUUID != null) {
-            nbt.setBoolean("HasConductorUUID", true);
-            nbt.setUniqueId("ConductorUUID", this.conductorUUID);
-        }
-        return nbt;
+        return this.conductorRef.writeToNBT(nbt);
     }
 
     public void readFromNBT(NBTTagCompound nbt) {
-        if(nbt.getBoolean("HasConductorUUID")) {
-            this.conductorUUID = nbt.getUniqueId("ConductorUUID");
-        }
+        this.conductorRef.readFromNBT(nbt);
     }
 
     public void writeToBuf(ByteBuf buf) {
-        buf.writeBoolean(this.conductorUUID != null);
-        if(this.conductorUUID != null) {
-            ByteBufUtils.writeUTF8String(buf, this.conductorUUID.toString());
-        }
+        this.conductorRef.writeToByteBuf(buf);
     }
 
     public void readFromBuf(ByteBuf buf) {
-        if(buf.readBoolean()) {
-            this.conductorUUID = UUID.fromString(ByteBufUtils.readUTF8String(buf));
-        }
+        this.conductorRef.readFromByteBuf(buf);
     }
 
     @Nullable
     public ConductorType getConductor() {
         if(this instanceof ConductorType) {
-            this.conductorUUID = null;
-            return this.conductor = null;
+            this.conductorRef.reset();
+            return null;
         }
-        if(this.conductor == null && this.conductorUUID != null) {
-            for (Entity entity : this.entity.world.loadedEntityList) {
-                if(entity instanceof MusicalSkeleton && ((MusicalSkeleton) entity).musicianType instanceof ConductorType && this.conductorUUID.equals(entity.getUniqueID()) && ((MusicalSkeleton) entity).getChannel() == this.entity.getChannel()) {
-                    this.conductor = (ConductorType) ((MusicalSkeleton) entity).musicianType;
-                    this.conductor.assign(this, this.conductor.getCurrentlyPlaying().getTrackAt(this.entity.getTrackID()));
-                    return this.conductor;
-                }
-            }
-            this.conductorUUID = null;
+
+        ConductorType type = this.conductorRef.get(this.entity.world);
+        if(type != null && type.entity.musicianType != type) {
+            this.conductorRef.reset();
+            return null;
         }
-        if(this.conductor == null) { //At this point, conductorUUID will always be null
-            for (Entity e : this.entity.world.loadedEntityList) {
-                if(e instanceof MusicalSkeleton && ((MusicalSkeleton) e).musicianType instanceof ConductorType && ((MusicalSkeleton) e).getChannel() == this.entity.getChannel()) {
-                    this.setConductor((MusicalSkeleton) e);
-                }
-            }
-        }
-        if(this.conductor != null && this.conductor.entity.musicianType != this.conductor) {
-            this.conductor = null;
-            this.conductorUUID = null;
-        }
-        return this.conductor;
+        return type;
     }
 
-    public void setConductor(MusicalSkeleton conductor) {
-        if(conductor.musicianType instanceof ConductorType) {
-            this.conductor = (ConductorType) conductor.musicianType;
-            this.conductorUUID = conductor.getUniqueID();
-        }
+
+    public EntityFieldReference<MusicalSkeleton, ConductorType> getConductorRef() {
+        return this.conductorRef;
     }
 
     public void setChannel(int channel) {
@@ -132,8 +116,9 @@ public class MusicianType {
 
     public void setTrack(int track) {
         this.entity.setTrackID(track);
-        if(this.conductor != null) {
-            this.conductor.assign(this, this.conductor.getCurrentlyPlaying().getTrackAt(track));
+        ConductorType type = this.getConductor();
+        if(type != null) {
+            type.assign(this, type.getCurrentlyPlaying().getTrackAt(track));
         }
     }
 

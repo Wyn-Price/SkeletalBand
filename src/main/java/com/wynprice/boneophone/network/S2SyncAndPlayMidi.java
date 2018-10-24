@@ -11,30 +11,36 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class S2SyncAndPlayMidi implements IMessage {
 
     private int entityID;
     private byte[] abyte;
 
+    private boolean restartTimer;
+
     @SuppressWarnings("unused")
     public S2SyncAndPlayMidi() {
     }
 
-    public S2SyncAndPlayMidi(int entityID, byte[] abyte) {
+    public S2SyncAndPlayMidi(int entityID, byte[] abyte, boolean restartTimer) {
         this.entityID = entityID;
         this.abyte = abyte;
+        this.restartTimer = restartTimer;
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityID);
+        buf.writeBoolean(this.restartTimer);
         MidiFileHandler.writeBytes(this.abyte, buf);
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityID = buf.readInt();
+        this.restartTimer = buf.readBoolean();
         this.abyte = MidiFileHandler.readBytes(buf);
     }
 
@@ -46,7 +52,11 @@ public class S2SyncAndPlayMidi implements IMessage {
             if(entity instanceof MusicalSkeleton) {
                 MusicianType type = ((MusicalSkeleton) entity).musicianType;
                 if(type instanceof ConductorType) {
-                    ((ConductorType) type).setCurrentlyPlaying(MidiFileHandler.readMidiFile(message.abyte));
+                    if(message.restartTimer) {
+                        ((ConductorType) type).setCurrentlyPlayingRaw(MidiFileHandler.readMidiFile(message.abyte));
+                    } else {
+                        ((ConductorType) type).setCurrentlyPlayingRaw(MidiFileHandler.readMidiFile(message.abyte));
+                    }
                 }
             }
         }

@@ -90,6 +90,7 @@ public class SkeletalBand {
         NETWORK.registerMessage(new S7SyncSkeletonChangeChannel.Handler(), S7SyncSkeletonChangeChannel.class, 7, Side.CLIENT);
         NETWORK.registerMessage(new C8SkeletonChangeTrack.Handler(), C8SkeletonChangeTrack.class, 8, Side.SERVER);
         NETWORK.registerMessage(new S9SyncSkeletonChangeTrack.Handler(), S9SyncSkeletonChangeTrack.class, 9, Side.CLIENT);
+        NETWORK.registerMessage(new C10SkeletonPlayMidi.Handler(), C10SkeletonPlayMidi.class, 10, Side.SERVER);
 
     }
 

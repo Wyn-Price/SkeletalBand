@@ -41,7 +41,7 @@ public class C1UploadMidiFile implements IMessage {
 
         @Override
         protected void handleMessage(C1UploadMidiFile message, MessageContext ctx, World world, EntityPlayer player) {
-            SkeletalBand.NETWORK.sendToDimension(new S2SyncAndPlayMidi(message.entityID, message.abyte), world.provider.getDimension());
+            MidiFileHandler.onMidiUploaded(message.entityID, message.abyte, world);
         }
     }
 }

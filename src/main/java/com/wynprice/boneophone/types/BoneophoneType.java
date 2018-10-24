@@ -2,15 +2,18 @@ package com.wynprice.boneophone.types;
 
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.SoundHandler;
+import com.wynprice.boneophone.entity.EntityFieldReference;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.S0MusicalSkeletonStateUpdate;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -27,7 +30,9 @@ public class BoneophoneType extends MusicianType {
     public boolean isKeyboard;
     public boolean isPlaying;
 
-    public MusicalSkeleton freind;
+//    public MusicalSkeleton freind;
+
+    public final EntityFieldReference<MusicalSkeleton, BoneophoneType> fieldReference;
 
     public float rightTargetHit = -5;
     public float leftTargetHit = -5;
@@ -44,42 +49,60 @@ public class BoneophoneType extends MusicianType {
 
     public BoneophoneType(MusicalSkeleton entity, MusicianTypeFactory factoryType) {
         super(entity, factoryType);
+        this.fieldReference = new EntityFieldReference<MusicalSkeleton, BoneophoneType>(MusicalSkeleton.class, "Friend", e -> {
+            if(e == this.entity) {
+                return false;
+            }
+            if(e.musicianType instanceof BoneophoneType) {
+                BoneophoneType type = (BoneophoneType) e.musicianType;
+//                if(type.fieldReference.getRawReference() != null)
+//                System.out.println(type.fieldReference.getRawReference().entity.getPositionVector());
+                if(type.fieldReference.getRawReference() == this || type.fieldReference.getRawReference() == null) {
+                    return Math.abs(e.posX - entity.posX) <= 80 && Math.abs(e.posZ - entity.posZ) <= 80 && Math.abs(e.posY - entity.posY) <= 30;
+                }
+            }
+            return false;
+        },
+                e -> (BoneophoneType) e.musicianType) {
+            @Override
+            public void reset() {
+                BoneophoneType.this.isPlaying = false;
+                BoneophoneType.this.isKeyboard = false;
+
+                if(this.reference != null) { //Should always be true
+                    this.reference.isPlaying = false;
+                    this.reference.isKeyboard = false;
+                }
+                super.reset();
+            }
+        };
     }
 
     @Override
     public void setChannel(int channel) {
-        if(this.freind != null) {
-            this.freind.setChannel(channel);
+        BoneophoneType type = this.fieldReference.get(this.entity.world);
+        if(type != null) {
+            type.setChannel(channel);
         }
         super.setChannel(channel);
     }
 
     @Override
     public void onTick() {
-        BoneophoneType freindType = null;
-        if(this.freind != null) {
-            MusicianType type = this.freind.musicianType;
-            if(!(type instanceof BoneophoneType)) {
-                this.entity.paused = false;
-                this.isKeyboard = false;
-                this.isPlaying = false;
-                this.freind = null;
-                return;
-            }
-            freindType = (BoneophoneType) type;
-        }
+        BoneophoneType type = this.fieldReference.get(this.entity.world);
 
+//        if(type != null && type.fieldReference.getRawReference() != this) {
+//            type.fieldReference.reset();
+//        }
 
         this.rightTicksFromHit++;
         this.leftTicksFromHit++;
 
         if(this.isPlaying) {
-            if(this.freind != null && freindType != null) {
-                this.entity.setPosition(this.freind.posX + 0.75 * Math.sin(Math.toRadians(freindType.keyboardRotationYaw + 90F)), this.freind.posY, this.freind.posZ + 0.75 * Math.cos(Math.toRadians(freindType.keyboardRotationYaw + 90F)));
-                this.entity.rotationYaw = this.entity.rotationYawHead = this.entity.prevRotationYawHead = -freindType.keyboardRotationYaw + 90F;
+            if(type != null) {
+                this.entity.setPosition(type.entity.posX + 0.75 * Math.sin(Math.toRadians(type.keyboardRotationYaw + 90F)), type.entity.posY, type.entity.posZ + 0.75 * Math.cos(Math.toRadians(type.keyboardRotationYaw + 90F)));
+                this.entity.rotationYaw = this.entity.rotationYawHead = this.entity.prevRotationYawHead = -type.keyboardRotationYaw + 90F;
                 this.entity.rotationPitch = 30;
-
-
             }
         }
 
@@ -87,25 +110,6 @@ public class BoneophoneType extends MusicianType {
             this.entity.rotationPitch = 0;
             this.entity.rotationYaw = 0;
             this.entity.rotationYawHead = 0;
-        }
-
-        if(this.freind != null && freindType != null && (freindType.freind != this.entity || this.freind.isDead)) {
-            this.isPlaying = false;
-            this.isKeyboard = false;
-            this.freind = null;
-        }
-
-        if((this.freind == null && (!this.isKeyboard && !this.isPlaying)) || this.freind == this.entity || (this.freind != null && !(this.freind.musicianType instanceof BoneophoneType))) {
-            if(this.freind != null && freindType != null) {
-                freindType.freind = null;
-                freindType.isKeyboard = false;
-                freindType.isPlaying = false;
-                this.freind.paused = false;
-            }
-            this.entity.paused = false;
-            this.isKeyboard = false;
-            this.isPlaying = false;
-            this.freind = null;
         }
         super.onTick();
     }
@@ -213,14 +217,44 @@ public class BoneophoneType extends MusicianType {
     }
 
     @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        nbt.setBoolean("Keyboard", this.isKeyboard);
+        nbt.setBoolean("Playing", this.isPlaying);
+        return this.fieldReference.writeToNBT(nbt);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound nbt) {
+        this.isKeyboard = nbt.getBoolean("Keyboard");
+        this.isPlaying = nbt.getBoolean("Playing");
+        this.fieldReference.readFromNBT(nbt);
+    }
+
+    @Override
+    public void writeToBuf(ByteBuf buf) {
+        buf.writeBoolean(this.isKeyboard);
+        buf.writeBoolean(this.isPlaying);
+        this.fieldReference.writeToByteBuf(buf);
+    }
+
+    @Override
+    public void readFromBuf(ByteBuf buf) {
+        this.isKeyboard = buf.readBoolean();
+        this.isPlaying = buf.readBoolean();
+        this.fieldReference.readFromByteBuf(buf);
+    }
+
+
+    @Override
     public ItemStack getHeldItem(EnumHand hand) {
         return this.isKeyboard ? ItemStack.EMPTY : super.getHeldItem(hand);
     }
 
     @Override
     public boolean processInteract(EntityPlayer player, EnumHand hand) {
-        if(this.isKeyboard && this.freind != null && this.freind.musicianType != null) {
-            return this.freind.musicianType.processInteract(player, hand);
+        BoneophoneType type = this.fieldReference.get(this.entity.world);
+        if(this.isKeyboard && type != null) {
+            return type.processInteract(player, hand);
         }
         return super.processInteract(player, hand);
     }
@@ -237,101 +271,42 @@ public class BoneophoneType extends MusicianType {
 
     @Override
     public boolean shouldAIExecute() {
-        BoneophoneType freindType = null;
-        if(this.freind != null) {
-            MusicianType type = this.freind.musicianType;
-            if(type instanceof BoneophoneType) {
-                freindType = (BoneophoneType) type;
-            }
-        }
-
-        if(this.freind != null && freindType != null && freindType.freind == this.entity) {
+        BoneophoneType type = this.fieldReference.get(this.entity.world);
+        if(type != null && this.entity.getPositionVector().distanceTo(type.entity.getPositionVector()) >= 40) {
+            this.fieldReference.reset();
             return false;
         }
-        if(freindType != null && freindType.freind != null && (this.freind.isDead || this.entity.getPositionVector().distanceTo(this.freind.getPositionVector()) >= 40 || freindType.freind == this.entity)) {
-            this.freind = null;
-        }
-        if(this.freind == null) {
-            for (MusicalSkeleton skeleton : this.entity.world.getEntitiesWithinAABB(MusicalSkeleton.class, new AxisAlignedBB(-40, -20, -40, 40, 20, 40).offset(this.entity.getPositionVector()), e -> e != this.entity)) {
-                MusicianType type = skeleton.musicianType;
-                if(type instanceof BoneophoneType) {
-                    BoneophoneType boneophoneType = (BoneophoneType) type;
-                    if(boneophoneType.freind == null && !boneophoneType.isPlaying && !boneophoneType.isKeyboard) {
-                        this.freind = skeleton;
-                        boneophoneType.freind = this.entity;
-                    }
-                }
-
-
-            }
-        }
-        return this.freind != null;
+        return type != null;
     }
 
     @Override
     public void updateAITask() {
-
-        BoneophoneType boneophoneType = null;
-        if(this.freind == null) {
-            for (MusicalSkeleton skeleton : this.entity.world.getEntitiesWithinAABB(MusicalSkeleton.class, new AxisAlignedBB(-40, -20, -40, 40, 20, 40).offset(this.entity.getPositionVector()), e -> e != this.entity)) {
-                if(skeleton == this.entity) {
-                    continue;
-                }
-                MusicianType type = skeleton.musicianType;
-                if(type instanceof BoneophoneType) {
-                    boneophoneType = (BoneophoneType) type;
-                    if(boneophoneType.freind == null && !boneophoneType.isPlaying && !boneophoneType.isKeyboard) {
-                        this.freind = skeleton;
-                        boneophoneType.freind = this.entity;
-                    }
-                }
-
-
-            }
-        }
-        if(boneophoneType == null && this.freind != null) {
-            if(this.freind != null) {
-                MusicianType type = this.freind.musicianType;
-                if(type instanceof BoneophoneType) {
-                    boneophoneType = (BoneophoneType) type;
-                }
-            }
-
-        }
-        if(this.freind == null || boneophoneType == null) {
+        BoneophoneType type = this.fieldReference.get(this.entity.world);
+        if(type == null) {
             return;
         }
-        if(this.entity.getDistanceSq(this.freind) < 4.0D) {
-            if(!boneophoneType.isPlaying && !boneophoneType.isKeyboard) {
-                SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.entity.getEntityId(), this.freind.getEntityId(), true, false));
-                SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.freind.getEntityId(), this.entity.getEntityId(), false, true));
+        if(this.entity.getDistanceSq(type.entity) < 4.0D) {
+            if(type.isPlaying == this.isPlaying || type.isKeyboard == this.isKeyboard) {
+                SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.entity.getEntityId(), type.entity.getEntityId(), true, false));
+                SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(type.entity.getEntityId(), this.entity.getEntityId(), false, true));
 
                 this.isPlaying = true;
-                boneophoneType.isKeyboard = true;
+                type.isKeyboard = true;
 
                 this.entity.getNavigator().clearPath();
-                this.freind.getNavigator().clearPath();
-
+                type.entity.getNavigator().clearPath();
             }
-
         } else {
-            this.entity.getLookHelper().setLookPositionWithEntity(this.freind, 10.0F, (float)this.entity.getVerticalFaceSpeed());
-            this.entity.getNavigator().tryMoveToEntityLiving(this.freind, 0.5F);
+            this.entity.getLookHelper().setLookPositionWithEntity(type.entity, 10.0F, (float)this.entity.getVerticalFaceSpeed());
+            this.entity.getNavigator().tryMoveToEntityLiving(type.entity, 0.5F);
         }
 
     }
 
     @Override
     public boolean shouldAIContinueExecuting() {
-        BoneophoneType freindType = null;
-        if(this.freind != null) {
-            MusicianType type = this.freind.musicianType;
-            if(type instanceof BoneophoneType) {
-                freindType = (BoneophoneType) type;
-            }
-        }
-
-        return this.freind == null || freindType == null || this.freind.isDead || freindType.entity != this.entity;
+        BoneophoneType type = this.fieldReference.get(this.entity.world);
+        return type != null && this.entity.getDistanceSq(type.entity) >= 4.0D;
     }
 
     @Override

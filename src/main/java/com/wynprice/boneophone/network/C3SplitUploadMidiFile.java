@@ -1,7 +1,7 @@
 package com.wynprice.boneophone.network;
 
 import com.wynprice.boneophone.SkeletalBand;
-import com.wynprice.boneophone.gui.MidiSplitNetworkHandler;
+import com.wynprice.boneophone.midi.MidiSplitNetworkHandler;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -58,7 +58,7 @@ public class C3SplitUploadMidiFile implements IMessage {
         protected void handleMessage(C3SplitUploadMidiFile message, MessageContext ctx, World world, EntityPlayer player) {
             byte[] data = MidiSplitNetworkHandler.getMidiData(message.collectionID, message.index, message.total, message.data);
             if(data != null) {
-                SkeletalBand.NETWORK.sendToDimension(new S2SyncAndPlayMidi(message.entityID, data), world.provider.getDimension());
+                MidiFileHandler.onMidiUploaded(message.entityID, data, world);
             }
         }
     }

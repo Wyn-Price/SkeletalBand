@@ -4,16 +4,24 @@ import com.google.common.collect.Maps;
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
 import com.wynprice.boneophone.gui.GuiSelectMidis;
+import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
+import com.wynprice.boneophone.network.C10SkeletonPlayMidi;
+import com.wynprice.boneophone.network.S2SyncAndPlayMidi;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Map;
 
 public class ConductorType extends MusicianType {
 
     public int playingTicks = 0;
+    public String currentlyPlayingHash = "";
+    @SideOnly(Side.CLIENT)
     private MidiStream currentlyPlaying = SkeletalBand.SPOOKY;
 
     private Map<MusicianType, MidiStream.MidiTrack> assignedMap = Maps.newHashMap();
@@ -25,6 +33,10 @@ public class ConductorType extends MusicianType {
     @Override
     public void onTick() {
         super.onTick();
+        if(this.entity.world.isRemote && !this.currentlyPlaying.hash.equals(this.currentlyPlayingHash)) {
+            SkeletalBand.NETWORK.sendToDimension(new C10SkeletonPlayMidi(this.entity.getEntityId(), this.currentlyPlayingHash), this.entity.dimension);
+            this.currentlyPlayingHash = this.currentlyPlaying.hash;
+        }
         if(this.entity.world.isRemote && !this.entity.paused) {
             for (MusicianType type : this.assignedMap.keySet()) {
                 MidiStream.MidiTrack track = this.currentlyPlaying.getTrackAt(type.entity.getTrackID());
@@ -56,24 +68,28 @@ public class ConductorType extends MusicianType {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         nbt.setInteger("PlayingTicks", this.playingTicks);
+        nbt.setString("PlayingHash", this.currentlyPlayingHash);
         return super.writeToNBT(nbt);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         this.playingTicks = nbt.getInteger("PlayingTicks");
+        this.currentlyPlayingHash = nbt.getString("PlayingHash");
         super.readFromNBT(nbt);
     }
 
     @Override
     public void writeToBuf(ByteBuf buf) {
         buf.writeInt(this.playingTicks);
+        ByteBufUtils.writeUTF8String(buf, this.currentlyPlayingHash);
         super.writeToBuf(buf);
     }
 
     @Override
     public void readFromBuf(ByteBuf buf) {
         this.playingTicks = buf.readInt();
+        this.currentlyPlayingHash = ByteBufUtils.readUTF8String(buf);
         super.readFromBuf(buf);
     }
 
@@ -112,8 +128,14 @@ public class ConductorType extends MusicianType {
         return this.currentlyPlaying;
     }
 
+    public void setCurrentlyPlayingRaw(MidiStream stream) {
+        this.currentlyPlaying = stream;
+        this.currentlyPlayingHash = stream.hash;
+    }
+
     public void setCurrentlyPlaying(MidiStream currentlyPlaying) {
         this.currentlyPlaying = currentlyPlaying;
+        this.currentlyPlayingHash = currentlyPlaying.hash;
         this.assignedMap.clear();
         this.playingTicks = 0;
     }

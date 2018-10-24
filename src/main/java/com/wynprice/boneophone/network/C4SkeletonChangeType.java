@@ -48,7 +48,7 @@ public class C4SkeletonChangeType implements IMessage {
                 skeleton.musicianType = message.type.createType(skeleton);
                 for (Entity e : world.loadedEntityList) {
                     if(e instanceof MusicalSkeleton && !(((MusicalSkeleton) e).musicianType instanceof ConductorType)) {
-                        ((MusicalSkeleton) e).musicianType.setConductor(skeleton);
+                        ((MusicalSkeleton) e).musicianType.getConductorRef().setReferenceFromEntity(skeleton);
                     }
                 }
                 SkeletalBand.NETWORK.sendToDimension(new S5SyncSkeletonChangeType(message.entityId, message.type), world.provider.getDimension());

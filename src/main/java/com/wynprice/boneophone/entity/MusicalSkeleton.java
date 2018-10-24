@@ -101,9 +101,13 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
 
     @Override
     protected void collideWithEntity(Entity entityIn) {
-        if(!(this.musicianType instanceof BoneophoneType) || entityIn != ((BoneophoneType) this.musicianType).freind) {
-            super.collideWithEntity(entityIn);
+        if(this.musicianType instanceof BoneophoneType) {
+            BoneophoneType type = ((BoneophoneType) this.musicianType).fieldReference.get(entityIn.world);
+            if(type != null && type.getEntity() == entityIn) {
+                return;
+            }
         }
+        super.collideWithEntity(entityIn);
     }
 
     @Nullable

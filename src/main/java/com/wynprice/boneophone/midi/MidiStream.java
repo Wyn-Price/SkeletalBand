@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 
 public class MidiStream {
 
+    public final String hash;
     MidiTrack[] tracks = new MidiTrack[0];
     //    MidiTone[][] data = new MidiTone[0][0];
     private ExceptionSupplier<InputStream> streamSupplier;
@@ -23,11 +24,13 @@ public class MidiStream {
     MidiStream(MidiTrack[] tracks, float midiTicksPerMcTick) {
         this.tracks = tracks;
         this.midiTicksPerMcTick = midiTicksPerMcTick;
+        this.hash = MidiFileHandler.getMD5(this);
     }
 
     public MidiStream(ExceptionSupplier<InputStream> streamSupplier) {
         this.streamSupplier = streamSupplier;
         this.load();
+        this.hash = MidiFileHandler.getMD5(this);
     }
 
     public void load() {

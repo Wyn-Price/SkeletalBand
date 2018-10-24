@@ -51,7 +51,7 @@ public class S5SyncSkeletonChangeType implements IMessage {
                 if(message.type == MusicianTypes.CONDUCTOR) {
                     for (Entity e : world.loadedEntityList) {
                         if(e instanceof MusicalSkeleton && !(((MusicalSkeleton) e).musicianType instanceof ConductorType)) {
-                            ((MusicalSkeleton) e).musicianType.setConductor(skeleton);
+                            ((MusicalSkeleton) e).musicianType.getConductorRef().setReferenceFromEntity(skeleton);
 
                         }
                     }
