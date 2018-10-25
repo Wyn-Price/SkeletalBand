@@ -10,6 +10,7 @@ import com.wynprice.boneophone.entity.ThrowableNoteRenderer;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.*;
+import com.wynprice.boneophone.types.BassGuitarType;
 import com.wynprice.boneophone.types.BoneophoneType;
 import com.wynprice.boneophone.types.ConductorType;
 import com.wynprice.boneophone.types.MusicianTypeFactory;
@@ -91,7 +92,8 @@ public class SkeletalBand {
         NETWORK.registerMessage(new C8SkeletonChangeTrack.Handler(), C8SkeletonChangeTrack.class, 8, Side.SERVER);
         NETWORK.registerMessage(new S9SyncSkeletonChangeTrack.Handler(), S9SyncSkeletonChangeTrack.class, 9, Side.CLIENT);
         NETWORK.registerMessage(new C10SkeletonPlayMidi.Handler(), C10SkeletonPlayMidi.class, 10, Side.SERVER);
-
+        NETWORK.registerMessage(new C11SkeletonChangeVolume.Handler(), C11SkeletonChangeVolume.class, 11, Side.SERVER);
+        NETWORK.registerMessage(new S12SyncSkeletonChangeVolume.Handler(), S12SyncSkeletonChangeVolume.class, 12, Side.CLIENT);
     }
 
     @EventHandler
@@ -171,7 +173,9 @@ public class SkeletalBand {
     public static void onMusicianTypeRegister(RegistryEvent.Register<MusicianTypeFactory> event) {
         event.getRegistry().registerAll(
                 new MusicianTypeFactory(ConductorType::new).setRegistryName("conductor"),
-                new MusicianTypeFactory(BoneophoneType::new).setRegistryName("boneophone")
+                new MusicianTypeFactory(BoneophoneType::new).setRegistryName("boneophone"),
+                new MusicianTypeFactory(BassGuitarType::new).setRegistryName("bass")
+
         );
     }
 

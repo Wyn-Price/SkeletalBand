@@ -122,6 +122,10 @@ public class MusicianType {
         }
     }
 
+    public void setVolume(float volume) {
+        this.entity.setVolume(volume);
+    }
+
     public boolean processInteract(EntityPlayer player, EnumHand hand) {
         if(player.isSneaking()) {
             this.entity.paused = !this.entity.paused;
@@ -134,7 +138,7 @@ public class MusicianType {
 
     @SideOnly(Side.CLIENT)
     protected void displayMidiGui() {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiMusician(this.entity.getEntityId(), () -> this.entity.musicianType.factoryType, this.getConductor(), this.entity::getChannel, this.entity::getTrackID));
+        Minecraft.getMinecraft().displayGuiScreen(new GuiMusician(this.entity.getEntityId(), () -> this.entity.musicianType.factoryType, this.getConductor(), this.entity::getChannel, this.entity::getTrackID, this.entity::getVolume));
     }
 
     public Vec2f getSize() {

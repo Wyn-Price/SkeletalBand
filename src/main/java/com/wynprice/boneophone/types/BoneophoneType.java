@@ -91,9 +91,13 @@ public class BoneophoneType extends MusicianType {
     public void onTick() {
         BoneophoneType type = this.fieldReference.get(this.entity.world);
 
-//        if(type != null && type.fieldReference.getRawReference() != this) {
-//            type.fieldReference.reset();
-//        }
+        if(type != null && type.fieldReference.getRawReference() != this) {
+            type.fieldReference.reset();
+        }
+        if(type == null) {
+            this.isPlaying = false;
+            this.isKeyboard = false;
+        }
 
         this.rightTicksFromHit++;
         this.leftTicksFromHit++;
@@ -127,7 +131,7 @@ public class BoneophoneType extends MusicianType {
             return;
         }
         for (MidiStream.MidiTone tone : tones) {
-            this.playRawSound(SoundHandler.BONEOPHONE_OCTAVES[tone.getOctave()], 2F * (tone.getRawKey() / 128F) + 0.5F, (float) Math.pow(2.0D, (tone.getKey() / 12.0D)));
+            this.playRawSound(SoundHandler.BONEOPHONE_OCTAVES[tone.getOctave()], this.entity.getVolume() * 5f, (float) Math.pow(2.0D, (tone.getKey() / 12.0D)));
         }
     }
 

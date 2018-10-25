@@ -3,6 +3,7 @@ package com.wynprice.boneophone.gui;
 import com.google.common.collect.Lists;
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.midi.MidiStream;
+import com.wynprice.boneophone.network.C11SkeletonChangeVolume;
 import com.wynprice.boneophone.network.C4SkeletonChangeType;
 import com.wynprice.boneophone.network.C6SkeletonChangeChannel;
 import com.wynprice.boneophone.network.C8SkeletonChangeTrack;
@@ -11,12 +12,14 @@ import com.wynprice.boneophone.types.MusicianTypeFactory;
 import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraftforge.fml.client.config.GuiSlider;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -27,22 +30,25 @@ public class GuiMusician extends GuiScreen {
     private final ConductorType conductor;
     private final IntSupplier channelSupplier;
     private final IntSupplier trackIDSupplier;
+    private final DoubleSupplier volumeSupplier;
     private GuiTextField channelField;
 
     private GuiSelectList musicianTypes;
     private GuiSelectList trackList;
 
-    public GuiMusician(int entityID, Supplier<MusicianTypeFactory> typeGetter, ConductorType conductor, IntSupplier channelSupplier, IntSupplier trackIDSupplier) {
+    private GuiSlider volumeSlider;
+
+    public GuiMusician(int entityID, Supplier<MusicianTypeFactory> typeGetter, ConductorType conductor, IntSupplier channelSupplier, IntSupplier trackIDSupplier, DoubleSupplier volumeSupplier) {
         this.entityID = entityID;
         this.typeGetter = typeGetter;
         this.conductor = conductor;
         this.channelSupplier = channelSupplier;
         this.trackIDSupplier = trackIDSupplier;
+        this.volumeSupplier = volumeSupplier;
     }
 
     @Override
     public void initGui() {
-
         List<MusicianTypeEntry> typeList = Lists.newArrayList();
         MusicianTypeFactory activeType = this.typeGetter.get();
         MusicianTypeEntry active = null;
@@ -89,6 +95,8 @@ public class GuiMusician extends GuiScreen {
             }
         });
 
+        this.volumeSlider = new GuiSlider(3, 20, this.height - 30, this.width / 2 - 30, 20, "Volume: ", "%", 0, 100, this.volumeSupplier.getAsDouble() * 100D, true, true, slider -> SkeletalBand.NETWORK.sendToServer(new C11SkeletonChangeVolume(this.entityID, (float) (slider.getValue() / 100D))));
+
         super.initGui();
     }
 
@@ -99,6 +107,7 @@ public class GuiMusician extends GuiScreen {
         this.musicianTypes.render(mouseX, mouseY);
         this.trackList.render(mouseX, mouseY);
         this.channelField.drawTextBox();
+        this.volumeSlider.drawButton(mc, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -107,6 +116,13 @@ public class GuiMusician extends GuiScreen {
         this.musicianTypes.mouseClicked(mouseX, mouseY, mouseButton);
         this.trackList.mouseClicked(mouseX, mouseY, mouseButton);
         this.channelField.mouseClicked(mouseX, mouseY, mouseButton);
+        this.volumeSlider.mousePressed(mc, mouseX, mouseY);
+    }
+
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        super.mouseReleased(mouseX, mouseY, state);
+        this.volumeSlider.mouseReleased(mouseX, mouseY);
     }
 
     @Override
@@ -163,7 +179,7 @@ public class GuiMusician extends GuiScreen {
         private TrackEntry(@Nonnull ConductorType conductor, MidiStream.MidiTrack track) {
             this.conductor = conductor;
             this.track = track;
-            this.trackName = (track.name.isEmpty() ? "Unknown Track" :  track.name) + " (" + track.totalNotes + " Notes)";
+            this.trackName = (track.name.isEmpty() ? "Unknown Track" :  track.name.trim()) + " (" + track.totalNotes + " Notes)";
         }
 
         @Override

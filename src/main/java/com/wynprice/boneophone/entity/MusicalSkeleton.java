@@ -35,6 +35,8 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
     private int channel;
     private int trackID;
 
+    private float volume = 0.5F;
+
     public SkeletonType type = SkeletonType.NORMAL;
 
     public MusicianType musicianType = MusicianTypes.CONDUCTOR.createType(this);
@@ -77,6 +79,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         nbt.setInteger("Channel", this.channel);
         nbt.setInteger("Track", this.trackID);
         nbt.setBoolean("Paused", this.paused);
+        nbt.setFloat("Volume", this.volume);
 
         nbt.setString("MusicianFactoryType", Objects.requireNonNull(this.musicianType.factoryType.getRegistryName()).toString());
         nbt.setTag("MusicianType", this.musicianType.writeToNBT(new NBTTagCompound()));
@@ -90,6 +93,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         this.channel = nbt.getInteger("Channel");
         this.trackID = nbt.getInteger("Track");
         this.paused = nbt.getBoolean("Paused");
+        this.volume = nbt.getFloat("Volume");
 
         this.musicianType = Objects.requireNonNull(SkeletalBand.MUSICIAN_REGISTRY.getValue(new ResourceLocation(nbt.getString("MusicianFactoryType")))).createType(this);
         this.musicianType.readFromNBT(nbt.getCompoundTag("MusicianType"));
@@ -127,6 +131,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         buffer.writeInt(this.channel);
         buffer.writeInt(this.trackID);
         buffer.writeBoolean(this.paused);
+        buffer.writeFloat(this.volume);
         ByteBufUtils.writeRegistryEntry(buffer, this.musicianType.factoryType);
         this.musicianType.writeToBuf(buffer);
     }
@@ -137,6 +142,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         this.channel = additionalData.readInt();
         this.trackID = additionalData.readInt();
         this.paused = additionalData.readBoolean();
+        this.volume = additionalData.readFloat();
         this.musicianType = ByteBufUtils.readRegistryEntry(additionalData, SkeletalBand.MUSICIAN_REGISTRY).createType(this);
         this.musicianType.readFromBuf(additionalData);
     }
@@ -150,11 +156,19 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
     }
 
     public int getTrackID() {
-        return trackID;
+        return this.trackID;
     }
 
     public void setTrackID(int trackID) {
         this.trackID = trackID;
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
+    }
+
+    public float getVolume() {
+        return this.volume;
     }
 
     private class AiWander extends EntityAIWanderAvoidWater {
