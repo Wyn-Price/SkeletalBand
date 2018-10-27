@@ -1,156 +1,583 @@
 {
-  "boneophone00": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone00",
-      "stream": false
-    }]
-  },
-  "boneophone01": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone01",
-      "stream": false
-    }]
-  },
-  "boneophone02": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone02",
-      "stream": false
-    }]
-  },
-  "boneophone03": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone03",
-      "stream": false
-    }]
-  },
-  "boneophone04": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone04",
-      "stream": false
-    }]
-  },
-  "boneophone05": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone05",
-      "stream": false
-    }]
-  },
-  "boneophone06": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone06",
-      "stream": false
-    }]
-  },
-  "boneophone07": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone07",
-      "stream": false
-    }]
-  },
-  "boneophone08": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone08",
-      "stream": false
-    }]
-  },
-  "boneophone09": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone09",
-      "stream": false
-    }]
-  },
-  "boneophone10": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:boneophone/boneophone10",
-      "stream": false
-    }]
-  },
-  "bass00": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass00",
-      "stream": false
-    }]
-  },
-  "bass01": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass01",
-      "stream": false
-    }]
-  },
-  "bass02": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass02",
-      "stream": false
-    }]
-  },
-  "bass03": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass03",
-      "stream": false
-    }]
-  },
-  "bass04": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass04",
-      "stream": false
-    }]
-  },
-  "bass05": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass05",
-      "stream": false
-    }]
-  },
-  "bass06": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass06",
-      "stream": false
-    }]
-  },
-  "bass07": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass07",
-      "stream": false
-    }]
-  },
-  "bass08": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass08",
-      "stream": false
-    }]
-  },
-  "bass09": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass09",
-      "stream": false
-    }]
-  },
-  "bass10": {
-    "category": "master",
-    "sounds": [{
-      "name": "skeletalband:bass/bass10",
-      "stream": false
-    }]
-  }
+	"boneophone00": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone00",
+			"stream": false
+		}]
+	},
+	"boneophone01": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone01",
+			"stream": false
+		}]
+	},
+	"boneophone02": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone02",
+			"stream": false
+		}]
+	},
+	"boneophone03": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone03",
+			"stream": false
+		}]
+	},
+	"boneophone04": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone04",
+			"stream": false
+		}]
+	},
+	"boneophone05": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone05",
+			"stream": false
+		}]
+	},
+	"boneophone06": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone06",
+			"stream": false
+		}]
+	},
+	"boneophone07": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone07",
+			"stream": false
+		}]
+	},
+	"boneophone08": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone08",
+			"stream": false
+		}]
+	},
+	"boneophone09": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone09",
+			"stream": false
+		}]
+	},
+	"boneophone10": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:boneophone/boneophone10",
+			"stream": false
+		}]
+	},
+	"bass00": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass00",
+			"stream": false
+		}]
+	},
+	"bass01": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass01",
+			"stream": false
+		}]
+	},
+	"bass02": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass02",
+			"stream": false
+		}]
+	},
+	"bass03": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass03",
+			"stream": false
+		}]
+	},
+	"bass04": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass04",
+			"stream": false
+		}]
+	},
+	"bass05": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass05",
+			"stream": false
+		}]
+	},
+	"bass06": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass06",
+			"stream": false
+		}]
+	},
+	"bass07": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass07",
+			"stream": false
+		}]
+	},
+	"bass08": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass08",
+			"stream": false
+		}]
+	},
+	"bass09": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass09",
+			"stream": false
+		}]
+	},
+	"bass10": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:bass/bass10",
+			"stream": false
+		}]
+	},
+	"drum27": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum27",
+			"stream": false
+		}]
+	},
+	"drum28": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum28",
+			"stream": false
+		}]
+	},
+	"drum29": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum29",
+			"stream": false
+		}]
+	},
+	"drum30": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum30",
+			"stream": false
+		}]
+	},
+	"drum31": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum31",
+			"stream": false
+		}]
+	},
+	"drum32": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum32",
+			"stream": false
+		}]
+	},
+	"drum33": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum33",
+			"stream": false
+		}]
+	},
+	"drum34": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum34",
+			"stream": false
+		}]
+	},
+	"drum35": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum35",
+			"stream": false
+		}]
+	},
+	"drum36": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum36",
+			"stream": false
+		}]
+	},
+	"drum37": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum37",
+			"stream": false
+		}]
+	},
+	"drum38": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum38",
+			"stream": false
+		}]
+	},
+	"drum39": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum39",
+			"stream": false
+		}]
+	},
+	"drum40": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum40",
+			"stream": false
+		}]
+	},
+	"drum41": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum41",
+			"stream": false
+		}]
+	},
+	"drum42": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum42",
+			"stream": false
+		}]
+	},
+	"drum43": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum43",
+			"stream": false
+		}]
+	},
+	"drum44": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum44",
+			"stream": false
+		}]
+	},
+	"drum45": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum45",
+			"stream": false
+		}]
+	},
+	"drum46": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum46",
+			"stream": false
+		}]
+	},
+	"drum47": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum47",
+			"stream": false
+		}]
+	},
+	"drum48": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum48",
+			"stream": false
+		}]
+	},
+	"drum49": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum49",
+			"stream": false
+		}]
+	},
+	"drum50": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum50",
+			"stream": false
+		}]
+	},
+	"drum51": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum51",
+			"stream": false
+		}]
+	},
+	"drum52": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum52",
+			"stream": false
+		}]
+	},
+	"drum53": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum53",
+			"stream": false
+		}]
+	},
+	"drum54": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum54",
+			"stream": false
+		}]
+	},
+	"drum55": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum55",
+			"stream": false
+		}]
+	},
+	"drum56": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum56",
+			"stream": false
+		}]
+	},
+	"drum57": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum57",
+			"stream": false
+		}]
+	},
+	"drum58": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum58",
+			"stream": false
+		}]
+	},
+	"drum59": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum59",
+			"stream": false
+		}]
+	},
+	"drum60": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum60",
+			"stream": false
+		}]
+	},
+	"drum61": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum61",
+			"stream": false
+		}]
+	},
+	"drum62": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum62",
+			"stream": false
+		}]
+	},
+	"drum63": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum63",
+			"stream": false
+		}]
+	},
+	"drum64": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum64",
+			"stream": false
+		}]
+	},
+	"drum65": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum65",
+			"stream": false
+		}]
+	},
+	"drum66": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum66",
+			"stream": false
+		}]
+	},
+	"drum67": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum67",
+			"stream": false
+		}]
+	},
+	"drum68": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum68",
+			"stream": false
+		}]
+	},
+	"drum69": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum69",
+			"stream": false
+		}]
+	},
+	"drum70": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum70",
+			"stream": false
+		}]
+	},
+	"drum71": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum71",
+			"stream": false
+		}]
+	},
+	"drum72": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum72",
+			"stream": false
+		}]
+	},
+	"drum73": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum73",
+			"stream": false
+		}]
+	},
+	"drum74": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum74",
+			"stream": false
+		}]
+	},
+	"drum75": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum75",
+			"stream": false
+		}]
+	},
+	"drum76": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum76",
+			"stream": false
+		}]
+	},
+	"drum77": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum77",
+			"stream": false
+		}]
+	},
+	"drum78": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum78",
+			"stream": false
+		}]
+	},
+	"drum79": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum79",
+			"stream": false
+		}]
+	},
+	"drum80": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum80",
+			"stream": false
+		}]
+	},
+	"drum81": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum81",
+			"stream": false
+		}]
+	},
+	"drum82": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum82",
+			"stream": false
+		}]
+	},
+	"drum83": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum83",
+			"stream": false
+		}]
+	},
+	"drum84": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum84",
+			"stream": false
+		}]
+	},
+	"drum85": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum85",
+			"stream": false
+		}]
+	},
+	"drum86": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum86",
+			"stream": false
+		}]
+	},
+	"drum87": {
+		"category": "master",
+		"sounds": [{
+			"name": "skeletalband:drum/drum87",
+			"stream": false
+		}]
+	}
 }
