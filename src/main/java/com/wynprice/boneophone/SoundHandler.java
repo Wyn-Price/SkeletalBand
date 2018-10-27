@@ -12,22 +12,29 @@ public class SoundHandler {
     public static SoundEvent[] BONEOPHONE_OCTAVES = new SoundEvent[11];
     public static SoundEvent[] BASS_OCTAVES = new SoundEvent[11];
 
+    public static final int DRUM_OFFSET = 27;
+    public static SoundEvent[] DRUM_NOTES = new SoundEvent[60];
+
+
     @SubscribeEvent
     public static void onSoundRegistry(RegistryEvent.Register<SoundEvent> event) {
-        for (int i = 0; i < 11; i++) {
-            String name = String.valueOf(i);
-            if(name.length() == 1) {
-                name = "0" + name;
-            }
-            ResourceLocation bone = new ResourceLocation(SkeletalBand.MODID, "boneophone" + name);
-            SoundEvent soundEvent = new SoundEvent(bone).setRegistryName(bone);
-            event.getRegistry().register(soundEvent);
-            BONEOPHONE_OCTAVES[i] = soundEvent;
 
-            ResourceLocation bass = new ResourceLocation(SkeletalBand.MODID, "bass" + name);
-            soundEvent = new SoundEvent(bass).setRegistryName(bass);
+        registerSounds("boneophone", 0, BONEOPHONE_OCTAVES, event);
+        registerSounds("bass", 0, BASS_OCTAVES, event);
+
+        registerSounds("drum", DRUM_OFFSET, DRUM_NOTES, event);
+    }
+
+    private static void registerSounds(String name, int offset, SoundEvent[] array, RegistryEvent.Register<SoundEvent> event) {
+        for (int i = 0; i < array.length; i++) {
+            String num = String.valueOf(i + offset);
+            if(num.length() == 1) {
+                num = "0" + num;
+            }
+            ResourceLocation res = new ResourceLocation(SkeletalBand.MODID, name + num);
+            SoundEvent soundEvent = new SoundEvent(res).setRegistryName(res);
             event.getRegistry().register(soundEvent);
-            BASS_OCTAVES[i] = soundEvent;
+            array[i] = soundEvent;
         }
     }
 

@@ -1,5 +1,6 @@
 package com.wynprice.boneophone;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -54,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Objects;
 
 @Mod(modid = SkeletalBand.MODID, name = SkeletalBand.NAME, version = SkeletalBand.VERSION)
@@ -105,16 +107,19 @@ public class SkeletalBand {
                 try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new URL(base + "midis.json").openStream()))) {
                     JsonObject json = new JsonParser().parse(bufferedReader).getAsJsonObject();
                     LOGGER.info("Downloaded midi json file");
+                    List<String> skippedDownloads = Lists.newArrayList();
+                    List<String> downloads = Lists.newArrayList();
                     for (JsonElement elements : JsonUtils.getJsonArray(json, "midis")) {
                         String name = JsonUtils.getString(elements, "midis");
                         File out = new File(MidiFileHandler.folder, name);
                         if(!out.exists()) {
                             Files.copy(new URL(base + name).openStream(), out.toPath());
-                            LOGGER.info("Successfully downloaded and copied " + name);
+                            downloads.add(name);
                         } else {
-                            LOGGER.info("Skipping download of {} as it already exists locally", name);
+                            skippedDownloads.add(name);
                         }
                     }
+                    LOGGER.info("Skipped downloading {} and downloaded {}", skippedDownloads, downloads);
                 } catch (IOException e) {
                     LOGGER.error(CrashReport.makeCrashReport(e, "Failed to receive data from URL").getCompleteReport());
                 }
