@@ -48,6 +48,7 @@ public class MusicianType {
 
     public void onTick() {
         this.checkAssignment();
+        this.lookAtConductor();
     }
 
     public MusicalSkeleton getEntity() {
@@ -63,6 +64,13 @@ public class MusicianType {
     }
 
     public void setAnimationsFromTones(MidiStream.MidiTone[] tones) {
+    }
+
+    public void lookAtConductor() {
+        ConductorType conductor = this.getConductor();
+        if(conductor != null) {
+            this.entity.getLookHelper().setLookPositionWithEntity(conductor.entity, 15F, 15F);
+        }
     }
 
     public void playTones(MidiStream.MidiTone[] tones) {
@@ -147,6 +155,9 @@ public class MusicianType {
 
     public ItemStack getHeldItem(EnumHand hand) {
         return this.entity.getHeldItem(hand);
+    }
+
+    public void renderExtras(float partialTicks) {
     }
 
     public boolean shouldStopAiTasks() {

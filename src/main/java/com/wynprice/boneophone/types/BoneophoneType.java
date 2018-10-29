@@ -12,12 +12,13 @@ import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -132,6 +133,16 @@ public class BoneophoneType extends MusicianType {
         }
         for (MidiStream.MidiTone tone : tones) {
             this.playRawSound(SoundHandler.BONEOPHONE_OCTAVES[tone.getOctave()], this.entity.getVolume() * 5f, (float) Math.pow(2.0D, (tone.getKey() / 12.0D)));
+        }
+    }
+
+    @Override
+    public void lookAtConductor() {
+        ConductorType conductor = this.getConductor();
+        if(this.isKeyboard && conductor != null) {
+            double xDist = conductor.entity.posX - this.entity.posX;
+            double zDist =  conductor.entity.posZ - this.entity.posZ;
+            this.keyboardRotationYaw = (float)(-Math.toDegrees(MathHelper.atan2(zDist, xDist))) + 180F;
         }
     }
 
@@ -255,7 +266,7 @@ public class BoneophoneType extends MusicianType {
 
     @Override
     public ItemStack getHeldItem(EnumHand hand) {
-        return this.isKeyboard ? ItemStack.EMPTY : super.getHeldItem(hand);
+        return this.isPlaying ? new ItemStack(Items.BONE): super.getHeldItem(hand);
     }
 
     @Override
@@ -279,6 +290,10 @@ public class BoneophoneType extends MusicianType {
 
     @Override
     public boolean shouldAIExecute() {
+        //During the startup of the world, weird things can happen and the client can get out of sync with the server
+        if(this.entity.ticksSinceCreation <= 10) {
+            return false;
+        }
         BoneophoneType type = this.fieldReference.get(this.entity.world);
         if(type != null && this.entity.getPositionVector().distanceTo(type.entity.getPositionVector()) >= 40) {
             this.fieldReference.reset();

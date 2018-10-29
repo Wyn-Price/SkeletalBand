@@ -1,34 +1,28 @@
 package com.wynprice.boneophone.entity;
 
 import com.wynprice.boneophone.SkeletalBand;
-import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.types.BoneophoneType;
-import com.wynprice.boneophone.types.ConductorType;
 import com.wynprice.boneophone.types.MusicianType;
 import com.wynprice.boneophone.types.MusicianTypes;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class MusicalSkeleton extends EntityCreature implements IEntityAdditionalSpawnData {
+
+    public int ticksSinceCreation;
 
     public boolean paused;
 
@@ -66,6 +60,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
 
         Vec2f vec = this.musicianType.getSize();
         this.setSize(vec.x, vec.y);
+        this.ticksSinceCreation++;
     }
 
     @Override
@@ -114,15 +109,6 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
             }
         }
         super.collideWithEntity(entityIn);
-    }
-
-    @Nullable
-    @Override
-    public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata) {
-        IEntityLivingData data =  super.onInitialSpawn(difficulty, livingdata);
-        this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(Items.BONE));
-        this.setItemStackToSlot(EntityEquipmentSlot.OFFHAND, new ItemStack(Items.BONE));
-        return data;
     }
 
     @Override

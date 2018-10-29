@@ -1,5 +1,6 @@
 package com.wynprice.boneophone.types;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.wynprice.boneophone.SkeletalBand;
 import com.wynprice.boneophone.entity.MusicalSkeleton;
@@ -15,6 +16,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.List;
 import java.util.Map;
 
 public class ConductorType extends MusicianType {
@@ -32,7 +34,7 @@ public class ConductorType extends MusicianType {
 
     @Override
     public void onTick() {
-        super.onTick();
+        //Don't call super, as it is just unnecessary
         if(this.entity.world.isRemote && !this.currentlyPlaying.hash.equals(this.currentlyPlayingHash) && !this.currentlyPlayingHash.isEmpty()) {
             SkeletalBand.NETWORK.sendToServer(new C10SkeletonPlayMidi(this.entity.getEntityId(), this.currentlyPlayingHash));
             this.currentlyPlayingHash = this.currentlyPlaying.hash;
@@ -120,11 +122,13 @@ public class ConductorType extends MusicianType {
     }
 
     private void checkMap() {
+        List<MusicianType> removed = Lists.newArrayList();
         for (MusicianType type : this.assignedMap.keySet()) {
             if(type.entity.musicianType != type || type.entity.getChannel() != this.entity.getChannel()) {
-                this.assignedMap.remove(type);
+                removed.add(type);
             }
         }
+        removed.forEach(this.assignedMap::remove);
     }
 
     public MidiStream getCurrentlyPlaying() {

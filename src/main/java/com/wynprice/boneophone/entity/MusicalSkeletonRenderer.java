@@ -1,5 +1,6 @@
 package com.wynprice.boneophone.entity;
 
+import com.wynprice.boneophone.ModelHandler;
 import com.wynprice.boneophone.SkeletalBand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBiped;
@@ -12,8 +13,11 @@ import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
@@ -38,6 +42,7 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
                 this.layerRenderers.add(i, new SkeletonHeldItemLayer(this));
             }
         }
+        this.addLayer(new AdditionalRenderLayer());
     }
 
 
@@ -203,4 +208,16 @@ public class MusicalSkeletonRenderer extends RenderBiped<MusicalSkeleton> {
         }
     }
 
+    public static class AdditionalRenderLayer implements LayerRenderer<MusicalSkeleton> {
+
+        @Override
+        public void doRenderLayer(MusicalSkeleton entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
+            entitylivingbaseIn.musicianType.renderExtras(partialTicks);
+        }
+
+        @Override
+        public boolean shouldCombineTextures() {
+            return false;
+        }
+    }
 }

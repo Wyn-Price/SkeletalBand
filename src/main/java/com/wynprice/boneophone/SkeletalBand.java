@@ -11,10 +11,7 @@ import com.wynprice.boneophone.entity.ThrowableNoteRenderer;
 import com.wynprice.boneophone.midi.MidiFileHandler;
 import com.wynprice.boneophone.midi.MidiStream;
 import com.wynprice.boneophone.network.*;
-import com.wynprice.boneophone.types.BassGuitarType;
-import com.wynprice.boneophone.types.BoneophoneType;
-import com.wynprice.boneophone.types.ConductorType;
-import com.wynprice.boneophone.types.MusicianTypeFactory;
+import com.wynprice.boneophone.types.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.crash.CrashReport;
@@ -179,7 +176,8 @@ public class SkeletalBand {
         event.getRegistry().registerAll(
                 new MusicianTypeFactory(ConductorType::new).setRegistryName("conductor"),
                 new MusicianTypeFactory(BoneophoneType::new).setRegistryName("boneophone"),
-                new MusicianTypeFactory(BassGuitarType::new).setRegistryName("bass")
+                new MusicianTypeFactory(BassGuitarType::new).setRegistryName("bass"),
+                new MusicianTypeFactory(DrumType::new).setRegistryName("drums")
 
         );
     }

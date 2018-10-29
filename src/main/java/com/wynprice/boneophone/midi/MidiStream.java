@@ -123,9 +123,6 @@ public class MidiStream {
                     }
                     data[Math.toIntExact(key)] = ain;
                 }
-                if(this.midiTicksPerMcTick == -1) {
-                    throw new IllegalArgumentException("Error loading. Unable to determine tick ratio");
-                }
                 if(totalNotes != 0) {
                     trackList.add(new MidiTrack(name04.isEmpty() ? name03 : name04, trackList.size(), totalNotes, min, max, this.midiTicksPerMcTick, data));
                 }
@@ -133,6 +130,10 @@ public class MidiStream {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        if(this.midiTicksPerMcTick == -1) {
+            throw new IllegalArgumentException("Error loading. Unable to determine tick ratio");
+        }
+
 
         this.tracks = trackList.toArray(new MidiTrack[0]);
     }
@@ -181,6 +182,7 @@ public class MidiStream {
             this.midiTicksPerMcTick = midiTicksPerMcTick;
             this.data = data;
         }
+
         public MidiTone[] getNotesAt(int ticks) {
             int start = (int) Math.floor(ticks * this.midiTicksPerMcTick);
             int end = (int) Math.floor((ticks + 1) * this.midiTicksPerMcTick);
