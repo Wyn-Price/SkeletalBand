@@ -62,11 +62,16 @@ public class S0MusicalSkeletonStateUpdate implements IMessage {
                 if(skeleton.musicianType instanceof BoneophoneType) {
                     BoneophoneType b = (BoneophoneType) skeleton.musicianType;
                     b.fieldReference.setReferenceFromEntity(skeleton);
-                    b.isPlaying = message.mode == 1;
-                    b.isKeyboard = message.mode == 2;
-                    if(message.mode == 2) {
-                        b.keyboardRotationYaw = skeleton.rotationYaw;
+                    boolean isPlaying = message.mode == 1;
+                    boolean isKeyboard = message.mode == 2;
+                    if(b.isPlaying != isPlaying || b.isKeyboard != isKeyboard) {
+                        b.isPlaying = isPlaying;
+                        b.isKeyboard = isKeyboard;
+                        if(isKeyboard) {
+                            b.keyboardRotationYaw = skeleton.rotationYaw;
+                        }
                     }
+
                 }
             }
         }

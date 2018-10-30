@@ -98,6 +98,8 @@ public class BoneophoneType extends MusicianType {
         if(type == null) {
             this.isPlaying = false;
             this.isKeyboard = false;
+        } else if(!this.entity.world.isRemote && this.entity.ticksSinceCreation % 20 == 0) {
+            SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(this.entity.getEntityId(), this.entity.getEntityId(), this.isPlaying, this.isKeyboard));
         }
 
         this.rightTicksFromHit++;
@@ -314,6 +316,8 @@ public class BoneophoneType extends MusicianType {
                 SkeletalBand.NETWORK.sendToAll(new S0MusicalSkeletonStateUpdate(type.entity.getEntityId(), this.entity.getEntityId(), false, true));
 
                 this.isPlaying = true;
+                this.isKeyboard = false;
+                type.isPlaying = false;
                 type.isKeyboard = true;
 
                 this.entity.getNavigator().clearPath();
