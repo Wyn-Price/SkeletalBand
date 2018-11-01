@@ -23,7 +23,6 @@ public class ConductorType extends MusicianType {
 
     public int playingTicks = 0;
     public String currentlyPlayingHash = "";
-    @SideOnly(Side.CLIENT)
     private MidiStream currentlyPlaying = SkeletalBand.SPOOKY;
 
     private Map<MusicianType, MidiStream.MidiTrack> assignedMap = Maps.newHashMap();
@@ -55,6 +54,7 @@ public class ConductorType extends MusicianType {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     protected void displayMidiGui() {
         Minecraft.getMinecraft().displayGuiScreen(new GuiSelectMidis(this.entity.getEntityId(), () -> this.entity.musicianType.factoryType, this.entity::getChannel));
     }
@@ -124,7 +124,7 @@ public class ConductorType extends MusicianType {
     private void checkMap() {
         List<MusicianType> removed = Lists.newArrayList();
         for (MusicianType type : this.assignedMap.keySet()) {
-            if(type.entity.musicianType != type || type.entity.getChannel() != this.entity.getChannel()) {
+            if(type.entity.musicianType != type || type.entity.getChannel() != this.entity.getChannel() || !this.currentlyPlaying.getTracks().contains(this.assignedMap.get(type))) {
                 removed.add(type);
             }
         }

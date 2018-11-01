@@ -19,9 +19,10 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import javax.vecmath.Vector2f;
 
 import static net.minecraft.client.renderer.GlStateManager.rotate;
 import static net.minecraft.client.renderer.GlStateManager.translate;
@@ -223,13 +224,13 @@ public class BoneophoneType extends MusicianType {
     }
 
     @Override
-    public Vec2f getSize() {
+    public Vector2f getSize() {
         if(this.isKeyboard) {
-            return new Vec2f(1.0F, 0.3F);
+            return new Vector2f(1.0F, 0.3F);
         } else if(this.isPlaying) {
-            return new Vec2f(0.6F, 1.35F);
+            return new Vector2f(0.6F, 1.35F);
         } else {
-            return new Vec2f(0.6F, 1.99F);
+            return new Vector2f(0.6F, 1.99F);
         }
     }
 

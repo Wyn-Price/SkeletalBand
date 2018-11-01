@@ -13,11 +13,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
+import javax.vecmath.Vector2f;
 import java.util.Objects;
 
 public class MusicalSkeleton extends EntityCreature implements IEntityAdditionalSpawnData {
@@ -58,7 +58,7 @@ public class MusicalSkeleton extends EntityCreature implements IEntityAdditional
         super.onLivingUpdate();
         this.musicianType.onTick();
 
-        Vec2f vec = this.musicianType.getSize();
+        Vector2f vec = this.musicianType.getSize();
         this.setSize(vec.x, vec.y);
         this.ticksSinceCreation++;
     }

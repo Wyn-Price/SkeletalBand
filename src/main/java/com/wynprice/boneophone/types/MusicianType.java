@@ -7,17 +7,16 @@ import com.wynprice.boneophone.midi.MidiStream;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.vecmath.Vector2f;
 
 public class MusicianType {
 
@@ -36,7 +35,7 @@ public class MusicianType {
         this.conductorRef = new EntityFieldReference<MusicalSkeleton, ConductorType>(MusicalSkeleton.class, "Conductor", s -> s != this.entity && s.musicianType instanceof ConductorType && s.getChannel() == MusicianType.this.entity.getChannel(), s -> (ConductorType) s.musicianType) {
             @Override
             public void setReferenceFromEntity(@Nonnull MusicalSkeleton entity) {
-                if(this.entityPredicate.test(entity)) {
+                if(this.entityPredicate.test(entity) && entity.world.isRemote) {
                     ConductorType conductor = ((ConductorType)entity.musicianType);
                     conductor.assign(MusicianType.this, conductor.getCurrentlyPlaying().getTrackAt(MusicianType.this.entity.getTrackID()));
                 }
@@ -56,9 +55,11 @@ public class MusicianType {
     }
 
     protected void checkAssignment() {
-        ConductorType conductor = this.getConductor();
-        if(conductor != null && !conductor.isAssigned(this)) {
-            conductor.assign(this, conductor.getCurrentlyPlaying().getTrackAt(this.entity.getTrackID()));
+        if(this.entity.world.isRemote) {
+            ConductorType conductor = this.getConductor();
+            if(conductor != null && !conductor.isAssigned(this)) {
+                conductor.assign(this, conductor.getCurrentlyPlaying().getTrackAt(this.entity.getTrackID()));
+            }
         }
 
     }
@@ -125,7 +126,7 @@ public class MusicianType {
     public void setTrack(int track) {
         this.entity.setTrackID(track);
         ConductorType type = this.getConductor();
-        if(type != null) {
+        if(type != null && this.entity.world.isRemote) {
             type.assign(this, type.getCurrentlyPlaying().getTrackAt(track));
         }
     }
@@ -149,8 +150,8 @@ public class MusicianType {
         Minecraft.getMinecraft().displayGuiScreen(new GuiMusician(this.entity.getEntityId(), () -> this.entity.musicianType.factoryType, this.getConductor(), this.entity::getChannel, this.entity::getTrackID, this.entity::getVolume));
     }
 
-    public Vec2f getSize() {
-        return new Vec2f(0.6F, 1.99F);
+    public Vector2f getSize() {
+        return new Vector2f(0.6F, 1.99F);
     }
 
     public ItemStack getHeldItem(EnumHand hand) {

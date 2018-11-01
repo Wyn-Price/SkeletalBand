@@ -10,8 +10,9 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
-@Mod.EventBusSubscriber(modid = SkeletalBand.MODID)
+@Mod.EventBusSubscriber(modid = SkeletalBand.MODID, value = Side.CLIENT)
 public class ModelHandler {
 
     //Do i really need to store the guitars in the main texture map?
